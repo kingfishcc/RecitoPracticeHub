@@ -18,6 +18,31 @@
     * {
       font-family: 'Chiron GoRound TC', 'GenSenRounded TW', sans-serif !important;
     }
+    
+    /* 自訂捲軸樣式 */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1; 
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #e8d5d7; 
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #d49a9e; 
+    }
+    
+    /* 彈出視窗動畫 */
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-animate {
+      animation: modalFadeIn 0.3s ease-out forwards;
+    }
   </style>
 </head>
 <body class="bg-[#f9f9fa]">
@@ -30,76 +55,177 @@
     const IconSearch = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
     const IconHome = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>;
     const IconBookOpen = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>;
-    const IconGlobe = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>;
+    const IconGlobe = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"></path></svg>;
     const IconRefreshCw = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>;
     const IconAlertCircle = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>;
     const IconChevronRight = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>;
     const IconFeather = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>;
-
+    const IconUser = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
+    const IconTrophy = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>;
+    const IconX = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
+    const IconCheckCircle = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>;
+    const IconLogOut = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>;
+    const IconGraduationCap = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>;
+    
     // --- 資料定義 ---
     const data = {
       chinese: {
         g7: [
-          { title: '兒時記趣', url: 'https://kingfishcc.github.io/Childhood-Story-Rearrange/' },
-          { title: '傘', url: 'https://kingfishcc.github.io/The-Umbrella-Rearrange/' },
-          { title: '夏夜', url: 'https://kingfishcc.github.io/Summer-Night-Rearrange/' }
+          { id: 'ch-g7-1', title: '兒時記趣', url: 'https://kingfishcc.github.io/Childhood-Story-Rearrange/' },
+          { id: 'ch-g7-2', title: '傘', url: 'https://kingfishcc.github.io/The-Umbrella-Rearrange/' },
+          { id: 'ch-g7-3', title: '夏夜', url: 'https://kingfishcc.github.io/Summer-Night-Rearrange/' }
         ],
         g8: [
-          { title: '跳水', url: 'https://kingfishcc.github.io/Diving-Rearrange/' },
-          { title: '風箏', url: 'https://kingfishcc.github.io/Kite-Rearrange/' },
-          { title: '庭中有奇樹', url: 'https://kingfishcc.github.io/In-The-Courtyard-There-Is-A-Strange-Tree-Rearrange/' },
-          { title: '慈烏夜啼', url: 'https://kingfishcc.github.io/Gentle-Crow-Nightly-Wails-Rearrange/' },
-          { title: '愛蓮說', url: 'https://kingfishcc.github.io/On-the-Love-of-the-Lotus-Rearrange/' },
-          { title: '一棵開花的樹', url: 'https://kingfishcc.github.io/A-Blooming-Tree-Rearrange/' },
-          { title: '木蘭詩', url: 'https://kingfishcc.github.io/The-Ballad-of-Mulan-Rearrange/' },
-          { title: '張釋之執法', url: 'https://kingfishcc.github.io/Zhang-Shizhi-Upholds-the-Law-Rearrange/' },
-          { title: '我所知道的康橋', url: 'https://kingfishcc.github.io/The-Cambridge-I-Know-Rearrange/' },
-          { title: '偶然', url: 'https://kingfishcc.github.io/By-Chance-Rearrange/' },
-          { title: '陋室銘', url: 'https://kingfishcc.github.io/Inscription-on-the-Humble-Home-Rearrange/' },
-          { title: '成功是失敗之母', url: 'https://gemini.google.com/share/47312c22ca61' }
+          { id: 'ch-g8-1', title: '跳水', url: 'https://kingfishcc.github.io/Diving-Rearrange/' },
+          { id: 'ch-g8-2', title: '風箏', url: 'https://kingfishcc.github.io/Kite-Rearrange/' },
+          { id: 'ch-g8-3', title: '庭中有奇樹', url: 'https://kingfishcc.github.io/In-The-Courtyard-There-Is-A-Strange-Tree-Rearrange/' },
+          { id: 'ch-g8-4', title: '慈烏夜啼', url: 'https://kingfishcc.github.io/Gentle-Crow-Nightly-Wails-Rearrange/' },
+          { id: 'ch-g8-5', title: '愛蓮說', url: 'https://kingfishcc.github.io/On-the-Love-of-the-Lotus-Rearrange/' },
+          { id: 'ch-g8-6', title: '一棵開花的樹', url: 'https://kingfishcc.github.io/A-Blooming-Tree-Rearrange/' },
+          { id: 'ch-g8-7', title: '木蘭詩', url: 'https://kingfishcc.github.io/The-Ballad-of-Mulan-Rearrange/' },
+          { id: 'ch-g8-8', title: '張釋之執法', url: 'https://kingfishcc.github.io/Zhang-Shizhi-Upholds-the-Law-Rearrange/' },
+          { id: 'ch-g8-9', title: '我所知道的康橋', url: 'https://kingfishcc.github.io/The-Cambridge-I-Know-Rearrange/' },
+          { id: 'ch-g8-10', title: '偶然', url: 'https://kingfishcc.github.io/By-Chance-Rearrange/' },
+          { id: 'ch-g8-11', title: '陋室銘', url: 'https://kingfishcc.github.io/Inscription-on-the-Humble-Home-Rearrange/' },
+          { id: 'ch-g8-12', title: '成功是失敗之母', url: 'https://gemini.google.com/share/47312c22ca61' }
         ],
         g9: [
-          { title: '戲李白', url: 'https://kingfishcc.github.io/Teasing-Li-Bai-Rearrange/' },
-          { title: '如夢令', url: 'https://kingfishcc.github.io/Lyrics-to-a-Dreamy-Chant-Rearrange/' },
-          { title: '南鄉子', url: 'https://kingfishcc.github.io/Airing-My-Feelings-upon-Climbing-Beigu-Pavilion-of-Jingkou-Rearrange/' },
-          { title: '與宋元思書', url: 'https://kingfishcc.github.io/Letter-to-Song-Yuansi-Rearrange/' },
-          { title: '車過枋寮', url: 'https://kingfishcc.github.io/Fangliao-on-a-Bus-Rearrange/' }
+          { id: 'ch-g9-1', title: '戲李白', url: 'https://kingfishcc.github.io/Teasing-Li-Bai-Rearrange/' },
+          { id: 'ch-g9-2', title: '如夢令', url: 'https://kingfishcc.github.io/Lyrics-to-a-Dreamy-Chant-Rearrange/' },
+          { id: 'ch-g9-3', title: '南鄉子', url: 'https://kingfishcc.github.io/Airing-My-Feelings-upon-Climbing-Beigu-Pavilion-of-Jingkou-Rearrange/' },
+          { id: 'ch-g9-4', title: '與宋元思書', url: 'https://kingfishcc.github.io/Letter-to-Song-Yuansi-Rearrange/' },
+          { id: 'ch-g9-5', title: '車過枋寮', url: 'https://kingfishcc.github.io/Fangliao-on-a-Bus-Rearrange/' }
         ]
       },
       english: {
         g7: {
           sem1: [],
           sem2: [
-            { title: 'Toast Art', url: 'https://gemini.google.com/share/f7279392c260' }
+            { id: 'en-g7-2-1', title: 'Toast Art', url: 'https://gemini.google.com/share/f7279392c260' }
           ]
         },
         g8: {
           sem1: [],
           sem2: [
-            { title: '課本 P.10', url: 'https://gemini.google.com/share/290252f163da' },
-            { title: '課本 P.55-56', url: 'https://gemini.google.com/share/894b06f0f2ab' },
-            { title: '課本 P.77-78', url: 'https://gemini.google.com/share/cd3fd7d13db0' },
-            { title: 'as…as…\n譬喻句型', url: 'https://gemini.google.com/share/0e353becfc6a' }
+            { id: 'en-g8-2-1', title: '課本 P.10', url: 'https://gemini.google.com/share/290252f163da' },
+            { id: 'en-g8-2-2', title: '課本 P.55-56', url: 'https://gemini.google.com/share/894b06f0f2ab' },
+            { id: 'en-g8-2-3', title: '課本 P.77-78', url: 'https://gemini.google.com/share/cd3fd7d13db0' },
+            { id: 'en-g8-2-4', title: 'as…as…\n譬喻句型', url: 'https://gemini.google.com/share/0e353becfc6a' }
           ]
         },
         g9: {
           sem1: [],
           sem2: [
-            { title: 'Unit 1', url: 'https://gemini.google.com/share/059f461e1510' },
-            { title: 'Unit 2', url: 'https://gemini.google.com/share/ec66c5413ae7' },
-            { title: 'Unit 3', url: 'https://gemini.google.com/share/194ee2e5fff8' }
+            { id: 'en-g9-2-1', title: 'Unit 1', url: 'https://gemini.google.com/share/059f461e1510' },
+            { id: 'en-g9-2-2', title: 'Unit 2', url: 'https://gemini.google.com/share/ec66c5413ae7' },
+            { id: 'en-g9-2-3', title: 'Unit 3', url: 'https://gemini.google.com/share/194ee2e5fff8' }
           ]
         }
       }
     };
 
+    // 計算總任務數
+    const calculateTotalTasks = () => {
+      let total = 0;
+      Object.values(data.chinese).forEach(grade => total += grade.length);
+      Object.values(data.english).forEach(grade => {
+        total += grade.sem1.length + grade.sem2.length;
+      });
+      return total;
+    };
+    const TOTAL_TASKS = calculateTotalTasks();
+
     function App() {
       const [currentPage, setCurrentPage] = useState('home');
       const [semester, setSemester] = useState(2);
+      
+      // 登入系統狀態
+      const [showLoginModal, setShowLoginModal] = useState(false);
+      const [user, setUser] = useState(null); // { name: string, type: 'guest' | 'google' }
+      
+      // 儲存物件：{ taskId: { correct: number, incorrect: number } }
+      const [completedTasks, setCompletedTasks] = useState({}); 
+      
+      // 模擬排行榜資料 (包含正確率數據)
+      const [leaderboard, setLeaderboard] = useState([
+        { name: '王小明', tasksCount: 15, avgAccuracy: 0.95, score: 0, type: 'student' },
+        { name: '李小華', tasksCount: 15, avgAccuracy: 0.88, score: 0, type: 'student' },
+        { name: '陳大文', tasksCount: 12, avgAccuracy: 0.92, score: 0, type: 'google' },
+        { name: '林美麗', tasksCount: 8, avgAccuracy: 0.75, score: 0, type: 'student' },
+      ]);
 
+      // 計算綜合分數的函數
+      const calculateScore = (tasksCount, avgAccuracy) => {
+        if (tasksCount === 0) return 0;
+        const accuracyWeight = (avgAccuracy * 2 - 1) * 50; 
+        return Math.round((tasksCount * 100) + accuracyWeight);
+      };
+
+      // 初始化排行榜分數與讀取本地資料
       useEffect(() => {
+        setLeaderboard(prev => 
+          prev.map(p => ({ ...p, score: calculateScore(p.tasksCount, p.avgAccuracy) }))
+              .sort((a, b) => b.score - a.score)
+        );
+
         document.title = '抽唄抽背練習平臺';
+        
+        const savedUser = localStorage.getItem('practiceHub_user');
+        if (savedUser) {
+          try {
+            const parsedUser = JSON.parse(savedUser);
+            setUser(parsedUser);
+            
+            const savedTasks = localStorage.getItem(`practiceHub_tasks_v2_${parsedUser.name}`);
+            if (savedTasks) {
+              setCompletedTasks(JSON.parse(savedTasks));
+            }
+          } catch (e) {
+            console.error("Failed to parse saved user data");
+          }
+        }
       }, []);
+
+      // 計算目前使用者的整體表現
+      const getUserStats = () => {
+        const taskIds = Object.keys(completedTasks);
+        const tasksCount = taskIds.length;
+        if (tasksCount === 0) return { tasksCount: 0, avgAccuracy: 0, score: 0 };
+
+        let totalCorrect = 0;
+        let totalQuestions = 0;
+        
+        taskIds.forEach(id => {
+          totalCorrect += completedTasks[id].correct;
+          totalQuestions += (completedTasks[id].correct + completedTasks[id].incorrect);
+        });
+
+        const avgAccuracy = totalQuestions === 0 ? 0 : totalCorrect / totalQuestions;
+        const score = calculateScore(tasksCount, avgAccuracy);
+        
+        return { tasksCount, avgAccuracy, score };
+      };
+
+      // 當任務進度改變時，自動更新排行榜與本地儲存
+      useEffect(() => {
+        if (user) {
+          localStorage.setItem(`practiceHub_tasks_v2_${user.name}`, JSON.stringify(completedTasks));
+          
+          const stats = getUserStats();
+          
+          setLeaderboard(prev => {
+            const existingIdx = prev.findIndex(p => p.name === user.name);
+            let newBoard = [...prev];
+            
+            if (existingIdx >= 0) {
+              newBoard[existingIdx] = { ...newBoard[existingIdx], ...stats };
+            } else if (stats.tasksCount > 0) {
+              newBoard.push({ name: user.name, type: user.type, ...stats });
+            }
+            return newBoard.sort((a, b) => b.score - a.score);
+          });
+        }
+      }, [completedTasks, user]);
 
       const getDaysUntilThursday = () => {
         const today = new Date();
@@ -115,6 +241,130 @@
 
       const toggleSemester = () => {
         setSemester(prev => (prev === 1 ? 2 : 1));
+      };
+
+      const handleTaskComplete = (taskId, url) => {
+        if (user && !completedTasks[taskId]) {
+          // 模擬答題數據：總題數 10~20 題，正確率約 70%~100%
+          const totalQ = Math.floor(Math.random() * 11) + 10; 
+          const minCorrect = Math.floor(totalQ * 0.7);
+          const correct = Math.floor(Math.random() * (totalQ - minCorrect + 1)) + minCorrect;
+          const incorrect = totalQ - correct;
+
+          setCompletedTasks(prev => ({
+            ...prev,
+            [taskId]: { correct, incorrect }
+          }));
+        }
+        window.open(url, '_blank');
+      };
+
+      const logout = () => {
+        setUser(null);
+        setCompletedTasks({}); // 登出時清空當前畫面進度
+        localStorage.removeItem('practiceHub_user');
+      };
+
+      // 登入彈出視窗元件
+      const LoginModal = () => {
+        const [guestName, setGuestName] = useState('');
+
+        if (!showLoginModal) return null;
+
+        const handleGuestLogin = () => {
+          if (!guestName.trim()) {
+            alert('請輸入您的姓名');
+            return;
+          }
+          const newUser = { name: guestName.trim(), type: 'student' };
+          setUser(newUser);
+          localStorage.setItem('practiceHub_user', JSON.stringify(newUser));
+          
+          // 讀取該使用者的歷史進度
+          const savedTasks = localStorage.getItem(`practiceHub_tasks_v2_${newUser.name}`);
+          if (savedTasks) {
+            setCompletedTasks(JSON.parse(savedTasks));
+          } else {
+            setCompletedTasks({});
+          }
+          
+          setShowLoginModal(false);
+        };
+
+        const handleGoogleLogin = () => {
+          const newUser = { name: 'Google訪客', type: 'google' };
+          setUser(newUser);
+          localStorage.setItem('practiceHub_user', JSON.stringify(newUser));
+          
+          const savedTasks = localStorage.getItem(`practiceHub_tasks_v2_${newUser.name}`);
+          if (savedTasks) {
+            setCompletedTasks(JSON.parse(savedTasks));
+          } else {
+            setCompletedTasks({});
+          }
+          
+          setShowLoginModal(false);
+        };
+
+        return (
+          <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+            <div className="bg-white rounded-[2rem] shadow-xl w-full max-w-md overflow-hidden modal-animate flex flex-col max-h-[90vh]">
+              <div className="p-6 text-center border-b border-gray-50 pt-8">
+                <h2 className="text-2xl font-bold text-gray-800 tracking-wider">請選擇登入方式</h2>
+                <p className="text-sm font-bold text-gray-500 mt-2">以紀錄與同步您的練習成績</p>
+              </div>
+              
+              <div className="p-6 overflow-y-auto space-y-4">
+                {/* Google Login */}
+                <button onClick={handleGoogleLogin} className="w-full bg-white border-2 border-[#82aeb1] hover:bg-[#f0f5f5] rounded-2xl p-4 flex flex-col transition-colors text-left group shadow-sm">
+                  <div className="flex items-center mb-2">
+                    <span className="font-bold text-2xl text-[#82aeb1] mr-3 font-mono">G</span>
+                    <span className="font-bold text-lg text-[#82aeb1]">使用 Google 帳號登入</span>
+                  </div>
+                  <p className="text-xs text-gray-500 leading-relaxed pl-8">
+                    <span className="font-bold text-[#82aeb1]">【自動同步】</span>成績自動儲存雲端並與您的帳號連結，能隨時在任何裝置查閱您的「歷程成績單」。
+                  </p>
+                </button>
+
+                {/* Guest Login */}
+                <div className="w-full bg-white border-2 border-gray-400 rounded-2xl p-4 flex flex-col text-left shadow-sm">
+                  <div className="flex items-center mb-3">
+                    <IconUser size={24} className="text-gray-600 mr-3" />
+                    <span className="font-bold text-lg text-gray-700">使用自訂訪客姓名</span>
+                  </div>
+                  <p className="text-xs text-gray-500 leading-relaxed pl-9 mb-3">
+                    <span className="font-bold text-gray-600">【本機儲存】</span>手動輸入您的姓名（例如：王小明），成績僅會儲存在這台電腦上。
+                  </p>
+                  <div className="pl-9 flex gap-2">
+                    <input 
+                      type="text" 
+                      placeholder="請輸入姓名..." 
+                      value={guestName}
+                      onChange={(e) => setGuestName(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleGuestLogin()}
+                      className="flex-1 border-2 border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-gray-400 font-bold text-gray-700 bg-gray-50 focus:bg-white"
+                    />
+                    <button 
+                      onClick={handleGuestLogin}
+                      className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-xl text-sm transition-colors shadow-sm whitespace-nowrap"
+                    >
+                      登入
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-gray-50 text-center border-t border-gray-100">
+                <button 
+                  onClick={() => setShowLoginModal(false)}
+                  className="text-red-400 hover:text-red-500 font-bold text-sm flex items-center justify-center w-full py-2 transition-colors"
+                >
+                  <IconX size={18} className="mr-1" /> 關閉視窗
+                </button>
+              </div>
+            </div>
+          </div>
+        );
       };
 
       const handleSearch = (e) => {
@@ -159,44 +409,107 @@
 
       const Navbar = () => (
         <nav className="bg-[#f2e8e9] text-gray-700 shadow-sm sticky top-0 z-50">
-          <div className="w-full px-6 md:px-10">
+          <div className="w-full px-4 md:px-10">
             <div className="flex items-center justify-between h-16">
+              {/* Logo */}
               <div className="flex items-center cursor-pointer flex-shrink-0" onClick={() => handleNavigate('home')}>
-                <span className="font-bold text-2xl tracking-wider text-[#d49a9e]">PRACTICE<span className="text-gray-500">HUB</span></span>
+                <span className="font-bold text-xl md:text-2xl tracking-wider text-[#d49a9e]">PRACTICE<span className="text-gray-500">HUB</span></span>
               </div>
-              <div className="flex-1 max-w-md mx-8 hidden md:block">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <IconSearch className="h-4 w-4 text-gray-400" />
-                  </div>
-                  <input
-                    type="text"
-                    onKeyDown={handleSearch}
-                    className="block w-full pl-10 pr-3 py-2 border border-transparent rounded-full leading-5 bg-white bg-opacity-70 text-gray-700 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#d49a9e] sm:text-sm transition-colors"
-                    placeholder="搜尋課文名稱"
-                  />
-                </div>
-              </div>
-              <div className="hidden md:flex items-center space-x-6 flex-shrink-0">
-                <button onClick={() => handleNavigate('home')} className="hover:text-[#d49a9e] font-medium transition-colors h-16 flex items-center">Home</button>
-                <div className="relative group cursor-pointer font-medium h-16 flex items-center">
-                  <span className="hover:text-[#d49a9e] transition-colors">國文 ▾</span>
-                  <div className="absolute left-1/2 -translate-x-1/2 top-12 pt-4 w-24 hidden group-hover:block z-50">
-                    <div className="bg-white shadow-lg rounded-md overflow-hidden border border-gray-100 text-center text-sm">
-                      <div className="py-2 hover:bg-pink-50 text-gray-700" onClick={() => handleNavigate('chinese-g7')}>國一 G7</div>
-                      <div className="py-2 hover:bg-pink-50 text-gray-700" onClick={() => handleNavigate('chinese-g8')}>國二 G8</div>
-                      <div className="py-2 hover:bg-pink-50 text-gray-700" onClick={() => handleNavigate('chinese-g9')}>國三 G9</div>
+              
+              {/* 搜尋與選單區塊 */}
+              <div className="flex-1 flex items-center justify-end md:justify-between ml-4">
+                
+                {/* 搜尋列 (手機版隱藏) */}
+                <div className="max-w-md w-full mx-4 hidden md:block">
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <IconSearch className="h-4 w-4 text-gray-400" />
                     </div>
+                    <input
+                      type="text"
+                      onKeyDown={handleSearch}
+                      className="block w-full pl-10 pr-3 py-2 border border-transparent rounded-full leading-5 bg-white bg-opacity-70 text-gray-700 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#d49a9e] sm:text-sm transition-colors"
+                      placeholder="搜尋課文名稱..."
+                    />
                   </div>
                 </div>
-                <div className="relative group cursor-pointer font-medium h-16 flex items-center">
-                  <span className="hover:text-[#d49a9e] transition-colors">英語 ▾</span>
-                  <div className="absolute left-1/2 -translate-x-1/2 top-12 pt-4 w-24 hidden group-hover:block z-50">
-                    <div className="bg-white shadow-lg rounded-md overflow-hidden border border-gray-100 text-center text-sm">
-                      <div className="py-2 hover:bg-pink-50 text-gray-700" onClick={() => handleNavigate('english-g7')}>國一 G7</div>
-                      <div className="py-2 hover:bg-pink-50 text-gray-700" onClick={() => handleNavigate('english-g8')}>國二 G8</div>
-                      <div className="py-2 hover:bg-pink-50 text-gray-700" onClick={() => handleNavigate('english-g9')}>國三 G9</div>
+
+                <div className="flex items-center space-x-2 md:space-x-6 flex-shrink-0">
+                  {/* 年級科目選單 (桌面版) */}
+                  <div className="hidden md:flex items-center space-x-6">
+                    <button onClick={() => handleNavigate('home')} className="hover:text-[#d49a9e] font-medium transition-colors h-16 flex items-center">首頁</button>
+                    
+                    {/* 國文下拉選單 */}
+                    <div className="relative group cursor-pointer font-medium h-16 flex items-center">
+                      <span className="hover:text-[#d49a9e] transition-colors">國文 ▾</span>
+                      <div className="absolute left-1/2 -translate-x-1/2 top-14 pt-2 w-24 hidden group-hover:block z-50">
+                        <div className="bg-white shadow-lg rounded-md overflow-hidden border border-gray-100 text-center text-sm">
+                          <div className="py-2 hover:bg-pink-50 text-gray-700" onClick={() => handleNavigate('chinese-g7')}>國一 G7</div>
+                          <div className="py-2 hover:bg-pink-50 text-gray-700" onClick={() => handleNavigate('chinese-g8')}>國二 G8</div>
+                          <div className="py-2 hover:bg-pink-50 text-gray-700" onClick={() => handleNavigate('chinese-g9')}>國三 G9</div>
+                        </div>
+                      </div>
                     </div>
+                    
+                    {/* 英語下拉選單 */}
+                    <div className="relative group cursor-pointer font-medium h-16 flex items-center">
+                      <span className="hover:text-[#d49a9e] transition-colors">英語 ▾</span>
+                      <div className="absolute left-1/2 -translate-x-1/2 top-14 pt-2 w-24 hidden group-hover:block z-50">
+                        <div className="bg-white shadow-lg rounded-md overflow-hidden border border-gray-100 text-center text-sm">
+                          <div className="py-2 hover:bg-pink-50 text-gray-700" onClick={() => handleNavigate('english-g7')}>國一 G7</div>
+                          <div className="py-2 hover:bg-pink-50 text-gray-700" onClick={() => handleNavigate('english-g8')}>國二 G8</div>
+                          <div className="py-2 hover:bg-pink-50 text-gray-700" onClick={() => handleNavigate('english-g9')}>國三 G9</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 登入按鈕/使用者資訊區塊 */}
+                  <div className="flex items-center ml-2 md:border-l md:border-[#e8d5d7] md:pl-4">
+                    {user ? (
+                      <div className="relative group">
+                        <button className="flex items-center space-x-2 bg-white/60 hover:bg-white rounded-full py-1.5 px-3 border border-pink-100 transition-colors">
+                          <div className="w-8 h-8 rounded-full bg-[#d49a9e] text-white flex items-center justify-center text-sm font-bold shadow-sm">
+                            {user.name.charAt(0)}
+                          </div>
+                          <span className="font-bold text-gray-700 hidden sm:block max-w-[80px] truncate">{user.name}</span>
+                        </button>
+                        
+                        {/* 增強版使用者下拉選單 */}
+                        <div className="absolute right-0 top-12 pt-2 w-56 hidden group-hover:block z-50">
+                          <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100">
+                            <div className="p-4 border-b border-gray-50 bg-pink-50/50">
+                              <p className="text-sm font-bold text-gray-800 truncate mb-2">{user.name}</p>
+                              <div className="grid grid-cols-2 gap-2 text-xs mb-2">
+                                <div className="bg-white p-2 rounded border border-gray-100 shadow-sm text-center">
+                                  <p className="text-gray-400 mb-1">完成進度</p>
+                                  <p className="font-bold text-gray-700">{Object.keys(completedTasks).length} <span className="text-[10px] text-gray-400">/ {TOTAL_TASKS}</span></p>
+                                </div>
+                                <div className="bg-white p-2 rounded border border-gray-100 shadow-sm text-center">
+                                  <p className="text-gray-400 mb-1">平均正確率</p>
+                                  <p className="font-bold text-[#82aeb1]">{(getUserStats().avgAccuracy * 100).toFixed(1)}%</p>
+                                </div>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2 overflow-hidden">
+                                <div className="bg-[#d49a9e] h-1.5 rounded-full" style={{ width: `${(Object.keys(completedTasks).length / TOTAL_TASKS) * 100}%` }}></div>
+                              </div>
+                            </div>
+                            <button onClick={logout} className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 flex items-center transition-colors">
+                              <IconLogOut size={16} className="mr-2" /> 登出帳號
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={() => setShowLoginModal(true)}
+                        className="flex items-center space-x-1.5 bg-[#82aeb1] hover:bg-[#6c979a] text-white font-bold py-1.5 px-3 md:py-2 md:px-5 rounded-full transition-all shadow-sm transform hover:-translate-y-0.5 border border-[#6b999c]"
+                      >
+                        <IconGraduationCap size={18} />
+                        <span className="hidden sm:inline">學生登入</span>
+                        <span className="sm:hidden">登入</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -208,56 +521,193 @@
       const HomeView = () => (
         <div className="flex-1 bg-[#f9f9fa] pb-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-            <div className="bg-[#e2e2e6] rounded-[2rem] p-12 text-center shadow-sm relative overflow-hidden flex flex-col items-center">
+            <div className="bg-[#e2e2e6] rounded-[2rem] p-8 md:p-12 text-center shadow-sm relative overflow-hidden flex flex-col items-center">
               <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-pink-200 via-transparent to-transparent"></div>
-              <h1 className="text-4xl font-bold mb-4 tracking-wide relative z-10 flex flex-col md:flex-row justify-center items-center">
+              <h1 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide relative z-10 flex flex-col sm:flex-row justify-center items-center">
                 <span className="text-[#d49a9e]">抽背練習</span>
                 <span className="text-gray-700">統整平臺</span>
               </h1>
-              <p className="text-gray-500 font-medium tracking-widest relative z-10 mb-4">週四晨間抽背，你，準備好了嗎？</p>
+              <p className="text-gray-500 font-medium tracking-widest relative z-10 mb-6 text-sm md:text-base">週四晨間抽背，你，準備好了嗎？</p>
               
-              <div className="bg-white/80 backdrop-blur-sm px-5 py-2 rounded-full shadow-sm border border-pink-100 flex items-center text-sm text-gray-600 relative z-10">
-                <span className="w-2 h-2 rounded-full bg-[#d49a9e] mr-2"></span>
-                抽背倒數：<span className="font-bold text-[#d49a9e] ml-1">{daysUntilThursday === 0 ? '就在今天！' : `${daysUntilThursday} 天`}</span>
+              <div className="flex flex-col sm:flex-row items-center gap-4 relative z-10">
+                <div className="bg-white/80 backdrop-blur-sm px-5 py-2 rounded-full shadow-sm border border-pink-100 flex items-center text-sm text-gray-600">
+                  <span className="w-2 h-2 rounded-full bg-[#d49a9e] mr-2 animate-pulse"></span>
+                  抽背倒數：<span className="font-bold text-[#d49a9e] ml-1">{daysUntilThursday === 0 ? '就在今天！' : `${daysUntilThursday} 天`}</span>
+                </div>
+                
+                {user && Object.keys(completedTasks).length > 0 && (
+                  <div className="bg-white px-5 py-2 rounded-full shadow-sm border border-gray-100 flex items-center text-sm">
+                    <span className="text-gray-500 mr-2">綜合積分:</span>
+                    <span className="font-bold text-yellow-500">{getUserStats().score}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* 年級卡片區 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
               {[
                 { id: 'g7', title: '國一', subtitle: 'Grade 7' },
                 { id: 'g8', title: '國二', subtitle: 'Grade 8' },
                 { id: 'g9', title: '國三', subtitle: 'Grade 9' }
               ].map((grade) => (
-                <div key={grade.id} className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100">
-                  <div className="bg-[#d49a9e] py-3 text-center">
-                    <h2 className="text-xl font-bold text-white tracking-widest">{grade.title}</h2>
-                    <p className="text-pink-100 text-xs">{grade.subtitle}</p>
+                <div key={grade.id} className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100 group transform hover:-translate-y-1">
+                  <div className="bg-gradient-to-r from-[#d49a9e] to-[#c28488] py-4 text-center relative overflow-hidden">
+                    <div className="absolute top-0 right-0 -mt-2 -mr-2 w-16 h-16 bg-white opacity-10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
+                    <h2 className="text-2xl font-bold text-white tracking-widest relative z-10">{grade.title}</h2>
+                    <p className="text-pink-100 text-xs font-medium relative z-10 opacity-80">{grade.subtitle}</p>
                   </div>
-                  <div className="px-4 pt-5 pb-4 flex justify-center space-x-6">
+                  <div className="px-4 py-6 flex justify-center space-x-8">
                     <button 
                       onClick={() => handleNavigate(`chinese-${grade.id}`)}
-                      className="flex flex-col items-center group w-20"
+                      className="flex flex-col items-center group/btn w-20"
                     >
-                      <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-[#f2e8e9] group-hover:text-[#d49a9e] transition-colors shadow-sm text-gray-400">
-                        <IconBookOpen size={22} />
+                      <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover/btn:bg-[#f2e8e9] group-hover/btn:text-[#d49a9e] transition-colors shadow-sm text-gray-400 border border-gray-100 group-hover/btn:border-[#e8d5d7]">
+                        <IconBookOpen size={24} />
                       </div>
-                      <span className="mt-2 text-gray-600 font-medium text-sm group-hover:text-[#d49a9e] transition-colors">國文</span>
+                      <span className="mt-3 text-gray-600 font-bold text-sm group-hover/btn:text-[#d49a9e] transition-colors tracking-wider">國文</span>
                     </button>
                     <button 
                       onClick={() => handleNavigate(`english-${grade.id}`)}
-                      className="flex flex-col items-center group w-20"
+                      className="flex flex-col items-center group/btn w-20"
                     >
-                      <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-[#f2e8e9] group-hover:text-[#d49a9e] transition-colors shadow-sm text-gray-400">
-                        <IconGlobe size={22} />
+                      <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover/btn:bg-[#f2e8e9] group-hover/btn:text-[#d49a9e] transition-colors shadow-sm text-gray-400 border border-gray-100 group-hover/btn:border-[#e8d5d7]">
+                        <IconGlobe size={24} />
                       </div>
-                      <span className="mt-2 text-gray-600 font-medium text-sm group-hover:text-[#d49a9e] transition-colors">英語</span>
+                      <span className="mt-3 text-gray-600 font-bold text-sm group-hover/btn:text-[#d49a9e] transition-colors tracking-wider">英語</span>
                     </button>
                   </div>
                 </div>
               ))}
             </div>
+            
+            {/* 排行榜預覽 */}
+            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100">
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center text-gray-700">
+                  <IconTrophy size={24} className="text-[#eeb375] mr-2" />
+                  <h3 className="text-xl font-bold tracking-wider">練習達人榜</h3>
+                </div>
+                <button 
+                  onClick={() => handleNavigate('leaderboard')}
+                  className="text-sm font-bold text-[#d49a9e] hover:text-[#c28488] flex items-center bg-pink-50 px-3 py-1.5 rounded-full transition-colors"
+                >
+                  查看完整榜單 <IconChevronRight size={16} />
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {leaderboard.slice(0, 4).map((player, index) => (
+                  <div key={index} className="flex items-center p-3 rounded-2xl bg-gray-50 border border-gray-100 hover:bg-white hover:shadow-md transition-all relative overflow-hidden group">
+                    {index < 3 && (
+                      <div className="absolute top-0 right-0 w-8 h-8 flex items-center justify-center">
+                        <div className={`w-0 h-0 border-t-[32px] border-l-[32px] border-l-transparent ${index === 0 ? 'border-t-yellow-400' : index === 1 ? 'border-t-gray-300' : 'border-t-amber-600'}`}></div>
+                        <span className="absolute top-1 right-1 text-white text-[10px] font-bold">{index + 1}</span>
+                      </div>
+                    )}
+                    
+                    <div className="w-10 h-10 rounded-full bg-[#f2e8e9] text-[#d49a9e] flex items-center justify-center font-bold mr-3 flex-shrink-0 text-lg border-2 border-white shadow-sm">
+                      {player.name.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0 pr-4">
+                      <div className="font-bold text-gray-700 truncate">{player.name}</div>
+                      <div className="flex items-center mt-0.5">
+                        <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 rounded font-bold mr-1">積分 {player.score}</span>
+                        <span className="text-[10px] text-gray-400 font-medium">完課 {player.tasksCount}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
+      const LeaderboardView = () => (
+        <div className="flex-1 bg-[#f9f9fa] pb-12">
+          <div className="bg-white border-b border-gray-100 px-6 py-3 flex items-center text-sm text-gray-500 shadow-sm">
+            <button onClick={() => handleNavigate('home')} className="hover:text-[#d49a9e] flex items-center">
+              <IconHome size={16} className="mr-1" /> 首頁
+            </button>
+            <IconChevronRight size={16} className="mx-2 text-gray-300" />
+            <span className="text-[#d49a9e] font-medium">排行榜</span>
+          </div>
+
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-yellow-50 text-yellow-500 rounded-full mb-4 shadow-sm border border-yellow-100">
+                <IconTrophy size={40} />
+              </div>
+              <h1 className="text-4xl font-bold text-gray-700 tracking-widest mb-2">榮譽排行榜</h1>
+              <p className="text-gray-500">努力練習，爭取最高榮耀！</p>
+            </div>
+
+            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="grid grid-cols-12 gap-4 p-4 border-b border-gray-100 bg-gray-50 text-gray-500 font-bold text-sm tracking-wider">
+                <div className="col-span-2 text-center">名次</div>
+                <div className="col-span-4 pl-4">挑戰者姓名</div>
+                <div className="col-span-2 text-center hidden sm:block">正確率</div>
+                <div className="col-span-2 text-center hidden sm:block">完成數</div>
+                <div className="col-span-4 sm:col-span-2 text-right pr-4 text-yellow-600">綜合積分</div>
+              </div>
+              
+              <div className="divide-y divide-gray-50">
+                {leaderboard.map((player, index) => {
+                  const isCurrentUser = user && player.name === user.name;
+                  return (
+                    <div key={index} className={`grid grid-cols-12 gap-4 p-4 items-center transition-colors ${isCurrentUser ? 'bg-pink-50/50 hover:bg-pink-50' : 'hover:bg-gray-50'}`}>
+                      <div className="col-span-2 flex justify-center">
+                        {index === 0 ? <span className="text-2xl drop-shadow-sm">🥇</span> : 
+                         index === 1 ? <span className="text-2xl drop-shadow-sm">🥈</span> : 
+                         index === 2 ? <span className="text-2xl drop-shadow-sm">🥉</span> : 
+                         <span className="text-lg font-bold text-gray-400 w-8 text-center">{index + 1}</span>}
+                      </div>
+                      
+                      <div className="col-span-4 flex items-center pl-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold mr-3 border-2 border-white shadow-sm flex-shrink-0
+                          ${isCurrentUser ? 'bg-[#d49a9e] text-white' : 'bg-[#f2e8e9] text-[#d49a9e]'}`}>
+                          {player.name.charAt(0)}
+                        </div>
+                        <span className={`font-bold truncate ${isCurrentUser ? 'text-[#d49a9e]' : 'text-gray-700'}`}>
+                          {player.name}
+                          {isCurrentUser && <span className="ml-2 text-[10px] bg-[#d49a9e] text-white px-2 py-0.5 rounded-full font-bold">YOU</span>}
+                        </span>
+                      </div>
+                      
+                      <div className="col-span-2 text-center hidden sm:block">
+                         <div className="inline-flex items-center justify-center bg-gray-100 px-2 py-1 rounded-md">
+                           <span className="text-xs font-bold text-gray-600">{(player.avgAccuracy * 100).toFixed(1)}%</span>
+                         </div>
+                      </div>
+
+                      <div className="col-span-2 text-center hidden sm:block">
+                        <span className="text-sm font-bold text-gray-600">{player.tasksCount}</span>
+                        <span className="text-xs text-gray-400 ml-1">/ {TOTAL_TASKS}</span>
+                      </div>
+
+                      <div className="col-span-4 sm:col-span-2 text-right pr-4">
+                        <span className="text-xl font-black text-yellow-500 font-mono tracking-tighter drop-shadow-sm">{player.score}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {!user && (
+              <div className="mt-8 text-center">
+                <p className="text-gray-500 mb-4">登入後即可將您的成績加入排行榜！</p>
+                <button 
+                  onClick={() => setShowLoginModal(true)}
+                  className="bg-[#d49a9e] hover:bg-[#c28488] text-white font-bold py-3 px-8 rounded-full transition-all shadow-md transform hover:-translate-y-1"
+                >
+                  立即登入挑戰
+                </button>
+              </div>
+            )}
           </div>
         </div>
       );
@@ -283,15 +733,31 @@
         const titleText = isEnglish 
           ? `${gradeNumber}${semester === 1 ? '上' : '下'}英語` 
           : `${gradeNumber}年級國文`;
+          
+        // 計算該頁面的進度
+        const pageTotal = contentList.length;
+        const pageCompleted = contentList.filter(item => completedTasks[item.id]).length;
 
         return (
           <div className="flex-1 bg-[#f9f9fa] pb-12">
-            <div className="bg-white border-b border-gray-100 px-6 py-3 flex items-center text-sm text-gray-500 shadow-sm">
-              <button onClick={() => handleNavigate('home')} className="hover:text-[#d49a9e] flex items-center">
-                <IconHome size={16} className="mr-1" /> Home
-              </button>
-              <IconChevronRight size={16} className="mx-2 text-gray-300" />
-              <span className="text-[#d49a9e] font-medium">{titleText}</span>
+            <div className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between text-sm shadow-sm">
+              <div className="flex items-center text-gray-500">
+                <button onClick={() => handleNavigate('home')} className="hover:text-[#d49a9e] flex items-center">
+                  <IconHome size={16} className="mr-1" /> 首頁
+                </button>
+                <IconChevronRight size={16} className="mx-2 text-gray-300" />
+                <span className="text-[#d49a9e] font-medium">{titleText}</span>
+              </div>
+              
+              {user && pageTotal > 0 && (
+                <div className="flex items-center text-gray-500 font-medium">
+                  <span className="mr-2 hidden sm:inline">本頁完成度:</span>
+                  <div className="w-24 bg-gray-200 rounded-full h-2 mr-2">
+                    <div className="bg-[#d49a9e] h-2 rounded-full transition-all duration-500" style={{ width: `${(pageCompleted / pageTotal) * 100}%` }}></div>
+                  </div>
+                  <span className={`${pageCompleted === pageTotal ? 'text-green-500' : 'text-gray-600'}`}>{pageCompleted}/{pageTotal}</span>
+                </div>
+              )}
             </div>
 
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -300,40 +766,78 @@
                   {isEnglish && (
                     <button 
                       onClick={toggleSemester}
-                      className="flex items-center px-4 py-2 border-2 border-[#d49a9e] text-[#d49a9e] rounded-full hover:bg-[#f2e8e9] transition-colors font-medium bg-white"
+                      className="flex items-center px-4 py-2 border-2 border-[#d49a9e] text-[#d49a9e] rounded-full hover:bg-[#f2e8e9] transition-colors font-bold bg-white shadow-sm hover:shadow-md"
                     >
                       切換至 {semester === 1 ? '下' : '上'}學期 <IconRefreshCw size={16} className="ml-2" />
                     </button>
                   )}
                 </div>
                 
-                <div className="w-full flex justify-center items-center mt-6 md:mt-0">
-                  <IconFeather className="text-[#c2b2b4] mr-4" size={48} />
-                  <h1 className="text-5xl font-bold text-[#6d6875] tracking-widest">{titleText}</h1>
+                <div className="w-full flex justify-center items-center mt-8 md:mt-0">
+                  <IconFeather className="text-[#e8d5d7] mr-4 transform -rotate-12" size={56} />
+                  <h1 className="text-4xl md:text-5xl font-bold text-[#6d6875] tracking-widest">{titleText}</h1>
                 </div>
               </div>
 
               {contentList.length === 0 && (
-                <div className="border border-dashed border-[#d49a9e] bg-[#fdf8f8] rounded-xl p-4 flex items-center justify-center text-[#d49a9e] mb-10 shadow-sm">
-                  <IconAlertCircle size={20} className="mr-2" />
-                  <span className="font-medium">
-                    公告：{isEnglish && semester === 1 ? '上學期' : ''}本科目目前尚未上傳，僅保留現有資源供參考
-                  </span>
+                <div className="border-2 border-dashed border-[#e8d5d7] bg-white rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-sm">
+                  <div className="w-16 h-16 bg-pink-50 rounded-full flex items-center justify-center text-[#d49a9e] mb-4">
+                    <IconAlertCircle size={32} />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-700 mb-2">目前沒有資料</h3>
+                  <p className="text-gray-500 font-medium">
+                    {isEnglish && semester === 1 ? '上學期' : ''}本科目目前尚未上傳練習內容，敬請期待。
+                  </p>
                 </div>
               )}
 
-              <div className="flex flex-wrap justify-center gap-6 mt-8">
-                {contentList.map((item, index) => (
-                  <a 
-                    key={index}
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-white text-gray-600 font-bold text-lg rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200 border border-gray-100 flex flex-col items-center justify-center w-36 h-24 hover:text-[#d49a9e] hover:border-[#f2e8e9] whitespace-pre-line text-center leading-tight px-2"
-                  >
-                    {item.title}
-                  </a>
-                ))}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 mt-8">
+                {contentList.map((item, index) => {
+                  const taskData = completedTasks[item.id];
+                  const isCompleted = !!taskData;
+                  
+                  return (
+                    <button 
+                      key={index}
+                      onClick={() => handleTaskComplete(item.id, item.url)}
+                      className={`relative group flex flex-col items-center justify-center h-32 rounded-2xl shadow-sm transition-all duration-300 border-2 overflow-hidden
+                        ${isCompleted 
+                          ? 'bg-white border-green-200 hover:border-green-300 hover:shadow-md' 
+                          : 'bg-white border-gray-100 hover:border-[#d49a9e] hover:shadow-md hover:-translate-y-1'}`}
+                    >
+                      {/* 完成標記與準確率顯示 */}
+                      {isCompleted && (
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-green-400"></div>
+                      )}
+                      {isCompleted && (
+                        <div className="absolute top-2 right-2 text-green-500 flex flex-col items-end">
+                          <IconCheckCircle size={18} className="drop-shadow-sm" />
+                        </div>
+                      )}
+                      
+                      <div className={`text-lg font-bold text-center px-3 whitespace-pre-line leading-tight tracking-wide z-10
+                        ${isCompleted ? 'text-gray-700' : 'text-gray-700 group-hover:text-[#d49a9e]'}`}>
+                        {item.title}
+                      </div>
+
+                      {/* 答題正確率小標籤 */}
+                      {isCompleted && taskData && (
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-md flex items-center shadow-sm">
+                           <span className="text-[10px] font-bold text-gray-500 mr-1">正確率</span>
+                           <span className={`text-[10px] font-bold ${taskData.correct / (taskData.correct + taskData.incorrect) >= 0.8 ? 'text-green-600' : 'text-orange-500'}`}>
+                             {Math.round((taskData.correct / (taskData.correct + taskData.incorrect)) * 100)}%
+                           </span>
+                        </div>
+                      )}
+                      
+                      {!user && (
+                        <div className="absolute inset-0 bg-white/80 rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity backdrop-blur-[1px] z-20">
+                          <span className="text-[#d49a9e] font-bold text-sm bg-white px-3 py-1 rounded-full shadow-sm border border-pink-100">點擊練習</span>
+                        </div>
+                      )}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </div>
@@ -343,17 +847,24 @@
       return (
         <div className="min-h-screen flex flex-col font-sans selection:bg-pink-100 selection:text-pink-900">
           <Navbar />
-          {currentPage === 'home' ? <HomeView /> : <SubjectView />}
           
-          <footer className="bg-[#f2e8e9] border-t border-[#e8d5d7] pt-6 pb-4 flex flex-col justify-between px-6 items-center">
-            <div className="space-y-1 text-gray-500 text-center mb-4 avoid-break-wrapper print:mt-6 print:mb-0">
-              <p className="font-medium text-[12px]">原版工具：米克師；延伸開發：金魚老師</p>
-              <p className="font-medium text-[12px]">
-                原版網頁連結：<a href="https://spedmixteaching.pages.dev/" target="_blank" rel="noopener noreferrer" className="hover:text-[#d49a9e] underline decoration-dotted transition-colors">https://reurl.cc/KO98Q9</a>
+          {currentPage === 'home' && <HomeView />}
+          {currentPage === 'leaderboard' && <LeaderboardView />}
+          {currentPage.includes('-') && <SubjectView />}
+          
+          {/* 登入彈出視窗 */}
+          <LoginModal />
+          
+          <footer className="bg-[#f2e8e9] border-t border-[#e8d5d7] pt-8 pb-6 flex flex-col justify-between px-6 items-center mt-auto">
+            <div className="space-y-2 text-gray-500 text-center mb-6 max-w-2xl">
+              <p className="font-bold text-sm text-gray-600">PRACTICE HUB 抽背練習統整平臺</p>
+              <p className="font-medium text-xs">原版工具：米克師 ｜ 延伸開發：金魚老師</p>
+              <p className="font-medium text-xs">
+                原版網頁連結：<a href="https://spedmixteaching.pages.dev/" target="_blank" rel="noopener noreferrer" className="text-[#d49a9e] hover:text-[#c28488] font-bold transition-colors">https://reurl.cc/KO98Q9</a>
               </p>
-              <p className="text-[10px] pt-2">本作品基於原版網頁改編，採用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener noreferrer" className="underline decoration-dotted hover:text-[#d49a9e] transition-colors">CC BY-NC-SA 4.0</a> 授權。</p>
+              <p className="text-[10px] pt-3 text-gray-400">本作品基於原版網頁改編，採用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener noreferrer" className="hover:text-[#d49a9e] underline decoration-dotted transition-colors">CC BY-NC-SA 4.0</a> 授權。</p>
             </div>
-            <p className="text-xs text-gray-400">© 2026 PRACTICE HUB</p>
+            <p className="text-xs text-gray-400 font-medium">© 2026 PRACTICE HUB</p>
           </footer>
         </div>
       );
