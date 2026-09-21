@@ -10,9 +10,9 @@
   
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" crossorigin></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
     * {
@@ -41,25 +41,15 @@
     .modal-animate {
       animation: modalFadeIn 0.3s ease-out forwards;
     }
-
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: transparent; 
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #cbd5e1; 
-      border-radius: 10px;
-    }
   </style>
 </head>
 <body class="bg-[#f9f9fa]">
   <div id="root"></div>
 
-  <script type="text/babel" data-presets="react" data-runtime="classic">
+  <script type="text/babel">
     const { useState, useEffect } = React;
 
+    // --- Defining SVG Icons ---
     const IconSearch = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
     const IconHome = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>;
     const IconBookOpen = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>;
@@ -74,7 +64,8 @@
     const IconCheckCircle = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>;
     const IconLogOut = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>;
     const IconGraduationCap = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>;
-    
+
+    // --- STREAMING_CHUNK:Configuring Course Data ---
     const data = {
       chinese: {
         g7: [
@@ -105,12 +96,7 @@
         ]
       },
       english: {
-        g7: {
-          sem1: [],
-          sem2: [
-            { id: 'en-g7-2-1', title: 'Toast Art', url: 'https://gemini.google.com/share/f7279392c260' }
-          ]
-        },
+        g7: { sem1: [], sem2: [{ id: 'en-g7-2-1', title: 'Toast Art', url: 'https://gemini.google.com/share/f7279392c260' }] },
         g8: {
           sem1: [],
           sem2: [
@@ -121,7 +107,9 @@
           ]
         },
         g9: {
-          sem1: [],
+          sem1: [
+            { id: 'en-g9-1-1', title: 'Unit 1\n課本 P.18', url: 'https://share.gemini.google/vR67MybngPM1' }
+          ],
           sem2: [
             { id: 'en-g9-2-1', title: 'Unit 1', url: 'https://gemini.google.com/share/059f461e1510' },
             { id: 'en-g9-2-2', title: 'Unit 2', url: 'https://gemini.google.com/share/ec66c5413ae7' },
@@ -141,6 +129,9 @@
     };
     const TOTAL_TASKS = calculateTotalTasks();
 
+    // --- STREAMING_CHUNK:Initializing App State ---
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrDqOlfsws0EzeTlUFkO9Z9qCQp5r0EkIee8EbMX2udC1ii04FPNy8GrVW7DXySx8f/exec";
+
     function App() {
       const [currentPage, setCurrentPage] = useState('home');
       const [semester, setSemester] = useState(2);
@@ -148,38 +139,41 @@
       const [showLoginModal, setShowLoginModal] = useState(false);
       const [user, setUser] = useState(null); 
       const [completedTasks, setCompletedTasks] = useState({}); 
-      
-      const [leaderboard, setLeaderboard] = useState([
-        { name: '王小明', tasksCount: 15, score: 1500, type: 'student' },
-        { name: '李小華', tasksCount: 14, score: 1400, type: 'student' },
-        { name: '陳大文', tasksCount: 12, score: 1200, type: 'google' },
-        { name: '林美麗', tasksCount: 8, score: 800, type: 'student' },
-      ]);
+      const [leaderboard, setLeaderboard] = useState([]);
 
       const calculateScore = (tasksCount) => tasksCount * 100;
 
+      // --- STREAMING_CHUNK:Handling Side Effects and Sync ---
       useEffect(() => {
         document.title = '抽唄抽背練習平臺';
         
+        if (GOOGLE_SCRIPT_URL) {
+          fetch(GOOGLE_SCRIPT_URL)
+            .then(res => res.json())
+            .then(data => {
+              if (Array.isArray(data)) {
+                const filteredData = data.filter(d => d.type !== 'test');
+                const sorted = filteredData.sort((a, b) => Number(b.score) - Number(a.score));
+                setLeaderboard(sorted);
+              }
+            })
+            .catch(err => console.log("Google Sheets load fallback:", err));
+        }
+
         const savedUser = localStorage.getItem('practiceHub_user');
         if (savedUser) {
           try {
             const parsedUser = JSON.parse(savedUser);
             setUser(parsedUser);
-            
-            const savedTasks = localStorage.getItem(`practiceHub_tasks_v3_${parsedUser.name}`);
-            if (savedTasks) {
-              setCompletedTasks(JSON.parse(savedTasks));
-            }
-          } catch (e) {
-            console.error("Failed to parse saved user data");
-          }
+            const savedTasks = localStorage.getItem(`practiceHub_tasks_v6_${parsedUser.name}`);
+            if (savedTasks) setCompletedTasks(JSON.parse(savedTasks));
+          } catch (e) {}
         }
       }, []);
 
       useEffect(() => {
         if (user) {
-          localStorage.setItem(`practiceHub_tasks_v3_${user.name}`, JSON.stringify(completedTasks));
+          localStorage.setItem(`practiceHub_tasks_v6_${user.name}`, JSON.stringify(completedTasks));
           
           if (user.type === 'test') return;
           
@@ -195,18 +189,29 @@
             } else if (tasksCount > 0) {
               newBoard.push({ name: user.name, type: user.type, tasksCount, score });
             }
-            return newBoard.sort((a, b) => b.score - a.score);
+            
+            const sortedBoard = newBoard.sort((a, b) => b.score - a.score);
+            
+            if (GOOGLE_SCRIPT_URL) {
+              fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ name: user.name, score, tasksCount, type: user.type })
+              }).catch(err => console.log("Google Sheets sync error:", err));
+            }
+            
+            return sortedBoard;
           });
         }
       }, [completedTasks, user]);
 
+      // --- STREAMING_CHUNK:Defining Helper Functions ---
       const login = (type, name) => {
         const newUser = { type, name };
         setUser(newUser);
         setShowLoginModal(false);
         localStorage.setItem('practiceHub_user', JSON.stringify(newUser));
 
-        const savedTasks = localStorage.getItem(`practiceHub_tasks_v3_${name}`);
+        const savedTasks = localStorage.getItem(`practiceHub_tasks_v6_${name}`);
         if (savedTasks) {
           setCompletedTasks(JSON.parse(savedTasks));
         } else {
@@ -232,9 +237,7 @@
         window.scrollTo(0, 0);
       };
 
-      const toggleSemester = () => {
-        setSemester(prev => (prev === 1 ? 2 : 1));
-      };
+      const toggleSemester = () => setSemester(prev => (prev === 1 ? 2 : 1));
 
       const handleTaskClick = (item) => {
         if (user) {
@@ -282,6 +285,7 @@
         }
       };
 
+      // --- STREAMING_CHUNK:Rendering Login Modal ---
       const LoginModal = () => {
         const [guestName, setGuestName] = useState('');
 
@@ -316,16 +320,16 @@
               <div className="p-8 space-y-4">
                 <button 
                   onClick={() => login('google', 'Google 用戶')}
-                  className="w-full group relative flex flex-col p-4 rounded-2xl border-2 border-[#82aeb1] bg-white hover:bg-[#f0f5f5] transition-all text-left overflow-hidden"
+                  className="w-full group relative flex flex-col p-4 rounded-2xl border-2 border-[#d49a9e] bg-white hover:bg-pink-50/40 transition-all text-left overflow-hidden cursor-pointer"
                 >
                   <div className="flex items-center mb-2 relative z-10">
-                    <div className="w-8 h-8 rounded-full bg-[#82aeb1] text-white flex items-center justify-center font-bold text-lg mr-3 group-hover:scale-110 transition-transform">
+                    <div className="w-8 h-8 rounded-full bg-[#d49a9e] text-white flex items-center justify-center font-bold text-lg mr-3 group-hover:scale-110 transition-transform">
                       G
                     </div>
-                    <span className="font-bold text-[#6c979a] text-lg">使用 Google 帳號登入</span>
+                    <span className="font-bold text-[#c28488] text-lg">使用 Google 帳號登入</span>
                   </div>
                   <p className="text-xs text-gray-500 relative z-10 leading-relaxed">
-                    <span className="font-bold text-[#82aeb1]">【自動同步】</span>成績自動儲存雲端並與您的帳號連結，能隨時在任何裝置查閱您的「歷程成績單」。
+                    <span className="font-bold text-[#d49a9e]">【自動同步】</span>成績自動儲存雲端並與您的帳號連結，能隨時在任何裝置查閱您的「歷程成績單」。
                   </p>
                 </button>
 
@@ -350,7 +354,7 @@
                     <button 
                       type="submit"
                       disabled={!guestName.trim()}
-                      className="px-4 py-2 bg-[#6d6875] hover:bg-[#5a5560] disabled:bg-gray-300 text-white rounded-xl font-bold transition-colors text-sm whitespace-nowrap"
+                      className="px-4 py-2 bg-[#6d6875] hover:bg-[#5a5560] disabled:bg-gray-300 text-white rounded-xl font-bold transition-colors text-sm whitespace-nowrap cursor-pointer"
                     >
                       登入
                     </button>
@@ -361,7 +365,7 @@
               <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex-shrink-0">
                 <button 
                   onClick={() => setShowLoginModal(false)}
-                  className="w-full py-2.5 text-[#d49a9e] hover:text-[#c28488] hover:bg-pink-50 rounded-xl font-bold flex items-center justify-center transition-colors"
+                  className="w-full py-2.5 text-[#d49a9e] hover:text-[#c28488] hover:bg-pink-50 rounded-xl font-bold flex items-center justify-center transition-colors cursor-pointer"
                 >
                   <IconX size={20} className="mr-1" /> 關閉視窗
                 </button>
@@ -371,6 +375,7 @@
         );
       };
 
+      // --- STREAMING_CHUNK:Rendering Navbar ---
       const Navbar = () => (
         <nav className="bg-[#f2e8e9] text-gray-700 shadow-sm sticky top-0 z-50">
           <div className="w-full px-4 md:px-10">
@@ -396,15 +401,15 @@
 
                 <div className="flex items-center space-x-2 md:space-x-6 flex-shrink-0">
                   <div className="hidden md:flex items-center space-x-6">
-                    <button onClick={() => handleNavigate('home')} className="hover:text-[#d49a9e] font-medium transition-colors h-16 flex items-center">首頁</button>
+                    <button onClick={() => handleNavigate('home')} className="hover:text-[#d49a9e] font-medium transition-colors h-16 flex items-center cursor-pointer">首頁</button>
                     
                     <div className="relative group cursor-pointer font-medium h-16 flex items-center">
                       <span className="hover:text-[#d49a9e] transition-colors">國文 ▾</span>
                       <div className="absolute left-1/2 -translate-x-1/2 top-14 pt-2 w-24 hidden group-hover:block z-50">
                         <div className="bg-white shadow-lg rounded-md overflow-hidden border border-gray-100 text-center text-sm">
-                          <div className="py-2 hover:bg-pink-50 text-gray-700" onClick={() => handleNavigate('chinese-g7')}>國一 G7</div>
-                          <div className="py-2 hover:bg-pink-50 text-gray-700" onClick={() => handleNavigate('chinese-g8')}>國二 G8</div>
-                          <div className="py-2 hover:bg-pink-50 text-gray-700" onClick={() => handleNavigate('chinese-g9')}>國三 G9</div>
+                          <div className="py-2 hover:bg-pink-50 text-gray-700 cursor-pointer" onClick={() => handleNavigate('chinese-g7')}>國一 G7</div>
+                          <div className="py-2 hover:bg-pink-50 text-gray-700 cursor-pointer" onClick={() => handleNavigate('chinese-g8')}>國二 G8</div>
+                          <div className="py-2 hover:bg-pink-50 text-gray-700 cursor-pointer" onClick={() => handleNavigate('chinese-g9')}>國三 G9</div>
                         </div>
                       </div>
                     </div>
@@ -413,9 +418,9 @@
                       <span className="hover:text-[#d49a9e] transition-colors">英語 ▾</span>
                       <div className="absolute left-1/2 -translate-x-1/2 top-14 pt-2 w-24 hidden group-hover:block z-50">
                         <div className="bg-white shadow-lg rounded-md overflow-hidden border border-gray-100 text-center text-sm">
-                          <div className="py-2 hover:bg-pink-50 text-gray-700" onClick={() => handleNavigate('english-g7')}>國一 G7</div>
-                          <div className="py-2 hover:bg-pink-50 text-gray-700" onClick={() => handleNavigate('english-g8')}>國二 G8</div>
-                          <div className="py-2 hover:bg-pink-50 text-gray-700" onClick={() => handleNavigate('english-g9')}>國三 G9</div>
+                          <div className="py-2 hover:bg-pink-50 text-gray-700 cursor-pointer" onClick={() => handleNavigate('english-g7')}>國一 G7</div>
+                          <div className="py-2 hover:bg-pink-50 text-gray-700 cursor-pointer" onClick={() => handleNavigate('english-g8')}>國二 G8</div>
+                          <div className="py-2 hover:bg-pink-50 text-gray-700 cursor-pointer" onClick={() => handleNavigate('english-g9')}>國三 G9</div>
                         </div>
                       </div>
                     </div>
@@ -424,17 +429,17 @@
                   <div className="flex items-center ml-2 md:border-l md:border-[#e8d5d7] md:pl-4">
                     {user ? (
                       <div className="relative group">
-                        <button className="flex items-center space-x-2 bg-white/60 hover:bg-white rounded-full py-1.5 px-3 border border-pink-100 transition-colors">
-                          <div className={`w-8 h-8 rounded-full text-white flex items-center justify-center text-sm font-bold shadow-sm ${user.type === 'test' ? 'bg-gray-400' : 'bg-[#d49a9e]'}`}>
+                        <button className="flex items-center space-x-2 bg-white/60 hover:bg-white rounded-full py-1.5 px-3 border border-pink-100 transition-colors cursor-pointer">
+                          <div className="w-8 h-8 rounded-full text-white flex items-center justify-center text-sm font-bold shadow-sm bg-[#d49a9e]">
                             {user.name.charAt(0)}
                           </div>
-                          <span className={`font-bold hidden sm:block max-w-[100px] truncate ${user.type === 'test' ? 'text-gray-500' : 'text-gray-700'}`}>{user.name}</span>
+                          <span className="font-bold hidden sm:block max-w-[100px] truncate text-gray-700">{user.name}</span>
                         </button>
                         
                         <div className="absolute right-0 top-12 pt-2 w-56 hidden group-hover:block z-50">
                           <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100">
                             <div className="p-4 border-b border-gray-50 bg-pink-50/50">
-                              <p className={`text-sm font-bold truncate mb-2 ${user.type === 'test' ? 'text-gray-500' : 'text-gray-800'}`}>{user.name}</p>
+                              <p className="text-sm font-bold truncate mb-2 text-gray-800">{user.name}</p>
                               <div className="grid grid-cols-2 gap-2 text-xs mb-2">
                                 <div className="bg-white p-2 rounded border border-gray-100 shadow-sm text-center">
                                   <p className="text-gray-400 mb-1">完成進度</p>
@@ -449,7 +454,7 @@
                                 <div className="bg-[#d49a9e] h-1.5 rounded-full" style={{ width: `${(Object.keys(completedTasks).length / TOTAL_TASKS) * 100}%` }}></div>
                               </div>
                             </div>
-                            <button onClick={logout} className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 flex items-center transition-colors">
+                            <button onClick={logout} className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 flex items-center transition-colors cursor-pointer">
                               <IconLogOut size={16} className="mr-2" /> 登出帳號
                             </button>
                           </div>
@@ -458,7 +463,7 @@
                     ) : (
                       <button 
                         onClick={() => setShowLoginModal(true)}
-                        className="flex items-center space-x-1.5 bg-[#82aeb1] hover:bg-[#6c979a] text-white font-bold py-1.5 px-3 md:py-2 md:px-5 rounded-full transition-all shadow-sm transform hover:-translate-y-0.5 border border-[#6b999c]"
+                        className="flex items-center space-x-1.5 bg-[#d49a9e] hover:bg-[#c28488] text-white font-bold py-1.5 px-3 md:py-2 md:px-5 rounded-full transition-all shadow-sm transform hover:-translate-y-0.5 border border-[#c28488] cursor-pointer"
                       >
                         <IconGraduationCap size={18} />
                         <span className="hidden sm:inline">學生登入</span>
@@ -473,6 +478,7 @@
         </nav>
       );
 
+      // --- STREAMING_CHUNK:Rendering Home View ---
       const getDisplayLeaderboard = () => {
         let board = [...leaderboard];
         if (user && user.type === 'test') {
@@ -529,18 +535,18 @@
                     <div className="px-4 py-6 flex justify-center space-x-8">
                       <button 
                         onClick={() => handleNavigate(`chinese-${grade.id}`)}
-                        className="flex flex-col items-center group/btn w-20"
+                        className="flex flex-col items-center group/btn w-20 cursor-pointer"
                       >
-                        <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover/btn:bg-[#f2e8e9] group-hover/btn:text-[#d49a9e] transition-colors shadow-sm text-gray-400 border border-gray-100 group-hover/btn:border-[#e8d5d7]">
+                        <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover/btn:bg-pink-50 group-hover/btn:text-[#d49a9e] transition-colors shadow-sm text-gray-400 border border-gray-100 group-hover/btn:border-[#d49a9e]">
                           <IconBookOpen size={24} />
                         </div>
                         <span className="mt-3 text-gray-600 font-bold text-sm group-hover/btn:text-[#d49a9e] transition-colors tracking-wider">國文</span>
                       </button>
                       <button 
                         onClick={() => handleNavigate(`english-${grade.id}`)}
-                        className="flex flex-col items-center group/btn w-20"
+                        className="flex flex-col items-center group/btn w-20 cursor-pointer"
                       >
-                        <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover/btn:bg-[#f2e8e9] group-hover/btn:text-[#d49a9e] transition-colors shadow-sm text-gray-400 border border-gray-100 group-hover/btn:border-[#e8d5d7]">
+                        <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover/btn:bg-pink-50 group-hover/btn:text-[#d49a9e] transition-colors shadow-sm text-gray-400 border border-gray-100 group-hover/btn:border-[#d49a9e]">
                           <IconGlobe size={24} />
                         </div>
                         <span className="mt-3 text-gray-600 font-bold text-sm group-hover/btn:text-[#d49a9e] transition-colors tracking-wider">英語</span>
@@ -558,50 +564,50 @@
                   </div>
                   <button 
                     onClick={() => handleNavigate('leaderboard')}
-                    className="text-sm font-bold text-[#d49a9e] hover:text-[#c28488] flex items-center bg-pink-50 px-3 py-1.5 rounded-full transition-colors"
+                    className="text-sm font-bold text-[#d49a9e] hover:text-[#c28488] flex items-center bg-pink-50 px-3 py-1.5 rounded-full transition-colors cursor-pointer"
                   >
                     查看完整名單 <IconChevronRight size={16} />
                   </button>
                 </div>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {displayBoard.slice(0, 4).map((player, index) => (
-                    <div key={index} className="flex items-center p-3 rounded-2xl bg-gray-50 border border-gray-100 hover:bg-white hover:shadow-md transition-all relative overflow-hidden group">
-                      {index < 3 && (
-                        <div className="absolute top-0 right-0 w-8 h-8 flex items-center justify-center">
-                          <div className={`w-0 h-0 border-t-[32px] border-l-[32px] border-l-transparent ${index === 0 ? 'border-t-yellow-400' : index === 1 ? 'border-t-gray-300' : 'border-t-amber-600'}`}></div>
-                          <span className="absolute top-1 right-1 text-white text-[10px] font-bold">{index + 1}</span>
+                {displayBoard.length === 0 ? (
+                  <div className="text-center py-8 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                    <p className="text-gray-500 font-medium tracking-wide">目前尚未有挑戰者，趕快登入成為第一名吧！</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {displayBoard.slice(0, 4).map((player, index) => (
+                      <div key={index} className="flex items-center p-3 rounded-2xl bg-gray-50 border border-gray-100 hover:bg-white hover:shadow-md transition-all relative overflow-hidden group">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold mr-3 flex-shrink-0 text-lg border-2 border-white shadow-sm bg-[#d49a9e] text-white">
+                          {player.name.charAt(0)}
                         </div>
-                      )}
-                      
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold mr-3 flex-shrink-0 text-lg border-2 border-white shadow-sm ${player.type === 'test' ? 'bg-gray-400 text-white' : 'bg-[#f2e8e9] text-[#d49a9e]'}`}>
-                        {player.name.charAt(0)}
+                        <div className="flex-1 min-w-0 pr-4">
+                          <div className="font-bold truncate text-gray-700">
+                            {player.name}
+                          </div>
+                          <div className="flex items-center mt-0.5">
+                            <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 rounded font-bold mr-1">積分 {player.score}</span>
+                            <span className="text-[10px] text-gray-400 font-medium">完課 {player.tasksCount}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0 pr-4">
-                        <div className={`font-bold truncate ${player.type === 'test' ? 'text-gray-500' : 'text-gray-700'}`}>
-                          {player.name}
-                        </div>
-                        <div className="flex items-center mt-0.5">
-                          <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 rounded font-bold mr-1">積分 {player.score}</span>
-                          <span className="text-[10px] text-gray-400 font-medium">完課 {player.tasksCount}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
         );
       };
 
+      // --- STREAMING_CHUNK:Rendering Leaderboard View ---
       const LeaderboardView = () => {
         const displayBoard = getDisplayLeaderboard();
         
         return (
           <div className="flex-1 bg-[#f9f9fa] pb-12">
             <div className="bg-white border-b border-gray-100 px-6 py-3 flex items-center text-sm text-gray-500 shadow-sm">
-              <button onClick={() => handleNavigate('home')} className="hover:text-[#d49a9e] flex items-center">
+              <button onClick={() => handleNavigate('home')} className="hover:text-[#d49a9e] flex items-center cursor-pointer">
                 <IconHome size={16} className="mr-1" /> 首頁
               </button>
               <IconChevronRight size={16} className="mx-2 text-gray-300" />
@@ -626,49 +632,54 @@
                 </div>
                 
                 <div className="divide-y divide-gray-50">
-                  {displayBoard.map((player, index) => {
-                    const isCurrentUser = user && player.name === user.name;
-                    const isTest = player.type === 'test';
-                    return (
-                      <div key={index} className={`grid grid-cols-12 gap-4 p-4 items-center transition-colors ${isCurrentUser ? 'bg-pink-50/50 hover:bg-pink-50' : 'hover:bg-gray-50'}`}>
-                        <div className="col-span-2 flex justify-center">
-                          {index === 0 ? <span className="text-2xl drop-shadow-sm">🥇</span> : 
-                           index === 1 ? <span className="text-2xl drop-shadow-sm">🥈</span> : 
-                           index === 2 ? <span className="text-2xl drop-shadow-sm">🥉</span> : 
-                           <span className="text-lg font-bold text-gray-400 w-8 text-center">{index + 1}</span>}
-                        </div>
-                        
-                        <div className="col-span-4 flex items-center pl-4">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold mr-3 border-2 border-white shadow-sm flex-shrink-0
-                            ${isTest ? 'bg-gray-400 text-white' : isCurrentUser ? 'bg-[#d49a9e] text-white' : 'bg-[#f2e8e9] text-[#d49a9e]'}`}>
-                            {player.name.charAt(0)}
+                  {displayBoard.length === 0 ? (
+                    <div className="p-12 text-center text-gray-500 tracking-wider">
+                      目前尚未有挑戰者，趕快去練習獲取積分吧！
+                    </div>
+                  ) : (
+                    displayBoard.map((player, index) => {
+                      const isCurrentUser = user && player.name === user.name;
+                      
+                      return (
+                        <div key={index} className={`grid grid-cols-12 gap-4 p-4 items-center transition-colors ${isCurrentUser ? 'bg-pink-50/50' : 'hover:bg-gray-50/50'}`}>
+                          <div className="col-span-2 flex justify-center items-center">
+                            {index === 0 ? <span className="text-2xl drop-shadow-sm">🥇</span> : 
+                             index === 1 ? <span className="text-2xl drop-shadow-sm">🥈</span> : 
+                             index === 2 ? <span className="text-2xl drop-shadow-sm">🥉</span> : 
+                             <span className="text-lg font-bold text-gray-400 w-8 text-center">{index + 1}</span>}
                           </div>
-                          <span className={`font-bold truncate ${isTest ? 'text-gray-500' : isCurrentUser ? 'text-[#d49a9e]' : 'text-gray-700'}`}>
-                            {player.name}
-                            {isCurrentUser && <span className={`ml-2 text-[10px] text-white px-2 py-0.5 rounded-full font-bold ${isTest ? 'bg-gray-400' : 'bg-[#d49a9e]'}`}>YOU</span>}
-                          </span>
-                        </div>
+                          
+                          <div className="col-span-4 flex items-center pl-4">
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold mr-3 border-2 border-white shadow-sm flex-shrink-0 bg-[#d49a9e] text-white">
+                              {player.name.charAt(0)}
+                            </div>
+                            <span className="font-bold truncate flex items-center text-[#d49a9e]">
+                              {player.name}
+                              {isCurrentUser && <span className="ml-2 text-[10px] text-white px-2 py-0.5 rounded-full font-bold bg-[#d49a9e]">YOU</span>}
+                            </span>
+                          </div>
 
-                        <div className="col-span-3 text-center hidden sm:block">
-                          <span className="text-base font-bold text-gray-600">{player.tasksCount}</span>
-                          <span className="text-xs text-gray-400 ml-1">/ {TOTAL_TASKS}</span>
-                        </div>
+                          <div className="col-span-3 text-center hidden sm:block">
+                            <span className="text-base font-bold text-gray-600">{player.tasksCount}</span>
+                            <span className="text-xs text-gray-400 ml-1">/ {TOTAL_TASKS}</span>
+                          </div>
 
-                        <div className="col-span-6 sm:col-span-3 text-right pr-4">
-                          <span className="text-xl font-black text-yellow-500 font-mono tracking-tighter drop-shadow-sm">{player.score}</span>
+                          <div className="col-span-6 sm:col-span-3 text-right pr-4">
+                            <span className="text-xl font-black text-yellow-500 font-mono tracking-tighter drop-shadow-sm">{player.score}</span>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
               </div>
               
               {!user && (
                 <div className="mt-8 text-center">
-                  <p className="text-gray-500 mb-4">登入後即可將您的成績加入排行榜！</p>
+                  <p className="text-gray-500 mb-4">登入後即可將您的成績加入榜單！</p>
                   <button 
                     onClick={() => setShowLoginModal(true)}
-                    className="bg-[#d49a9e] hover:bg-[#c28488] text-white font-bold py-3 px-8 rounded-full transition-all shadow-md transform hover:-translate-y-1"
+                    className="bg-[#d49a9e] hover:bg-[#c28488] text-white font-bold py-3 px-8 rounded-full transition-all shadow-md transform hover:-translate-y-1 cursor-pointer"
                   >
                     立即登入挑戰
                   </button>
@@ -679,6 +690,7 @@
         );
       };
 
+      // --- STREAMING_CHUNK:Rendering Subject View ---
       const SubjectView = () => {
         const [subject, grade] = currentPage.split('-');
         const isEnglish = subject === 'english';
@@ -701,7 +713,7 @@
           <div className="flex-1 bg-[#f9f9fa] pb-12">
             <div className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between text-sm shadow-sm">
               <div className="flex items-center text-gray-500">
-                <button onClick={() => handleNavigate('home')} className="hover:text-[#d49a9e] flex items-center">
+                <button onClick={() => handleNavigate('home')} className="hover:text-[#d49a9e] flex items-center cursor-pointer">
                   <IconHome size={16} className="mr-1" /> 首頁
                 </button>
                 <IconChevronRight size={16} className="mx-2 text-gray-300" />
@@ -712,9 +724,9 @@
                 <div className="flex items-center text-gray-500 font-medium">
                   <span className="mr-2 hidden sm:inline">本頁完成度：</span>
                   <div className="w-24 bg-gray-200 rounded-full h-2 mr-2 hidden sm:block overflow-hidden">
-                    <div className="bg-[#82aeb1] h-full rounded-full transition-all duration-500" style={{ width: `${(pageCompleted / pageTotal) * 100}%` }}></div>
+                    <div className="bg-[#d49a9e] h-full rounded-full transition-all duration-500" style={{ width: `${(pageCompleted / pageTotal) * 100}%` }}></div>
                   </div>
-                  <span className={`${pageCompleted === pageTotal ? 'text-[#82aeb1]' : 'text-gray-600'}`}>{pageCompleted}/{pageTotal}</span>
+                  <span className={`${pageCompleted === pageTotal ? 'text-[#d49a9e]' : 'text-gray-600'}`}>{pageCompleted}/{pageTotal}</span>
                 </div>
               )}
             </div>
@@ -725,7 +737,7 @@
                   {isEnglish && (
                     <button 
                       onClick={toggleSemester}
-                      className="flex items-center px-4 py-2 border-2 border-[#d49a9e] text-[#d49a9e] rounded-full hover:bg-[#f2e8e9] transition-colors font-bold bg-white shadow-sm hover:shadow-md"
+                      className="flex items-center px-4 py-2 border-2 border-[#d49a9e] text-[#d49a9e] rounded-full hover:bg-pink-50 transition-colors font-bold bg-white shadow-sm hover:shadow-md cursor-pointer"
                     >
                       切換至 {semester === 1 ? '下' : '上'}學期 <IconRefreshCw size={16} className="ml-2" />
                     </button>
@@ -733,13 +745,13 @@
                 </div>
                 
                 <div className="w-full flex justify-center items-center mt-8 md:mt-0">
-                  <IconFeather className="text-[#e8d5d7] mr-4 transform -rotate-12" size={56} />
+                  <IconFeather className="text-[#cbd5e1] mr-4 transform -rotate-12" size={56} />
                   <h1 className="text-4xl md:text-5xl font-bold text-[#6d6875] tracking-widest">{titleText}</h1>
                 </div>
               </div>
 
               {contentList.length === 0 && (
-                <div className="border border-dashed border-[#d49a9e] bg-[#fdf8f8] rounded-xl p-4 flex items-center justify-center text-[#d49a9e] mb-10 shadow-sm">
+                <div className="border border-dashed border-[#d49a9e] bg-pink-50/50 rounded-xl p-4 flex items-center justify-center text-[#d49a9e] mb-10 shadow-sm">
                   <IconAlertCircle size={20} className="mr-2" />
                   <span className="font-medium">
                     公告：{isEnglish && semester === 1 ? '上學期' : ''}本科目目前尚未上傳，僅保留現有資源供參考
@@ -757,15 +769,15 @@
                       onClick={() => handleTaskClick(item)}
                       className={`relative flex flex-col items-center justify-center rounded-2xl shadow-sm transition-all duration-300 border-2 overflow-hidden w-36 h-24 whitespace-pre-line text-center leading-tight px-3 font-bold text-lg cursor-pointer
                         ${isCompleted 
-                          ? 'border-[#82aeb1] bg-[#f0f5f5] text-[#5a8689] shadow-md' 
-                          : 'border-gray-100 bg-white text-gray-700 hover:border-[#82aeb1] hover:text-[#82aeb1] hover:-translate-y-1'}`}
-                      title={isCompleted ? "已完成！點擊可再次練習" : "點擊前往練習並獲得積分"}
+                          ? 'border-[#d49a9e] bg-[#d49a9e] text-white shadow-md' 
+                          : 'border-gray-100 bg-white text-gray-700 hover:border-[#d49a9e] hover:text-[#d49a9e] hover:-translate-y-1'}`}
+                      title="點擊前往練習並獲得積分"
                     >
                       {item.title}
                       
                       {isCompleted && (
-                        <div className="absolute top-2 right-2 text-[#82aeb1] bg-white rounded-full">
-                          <IconCheckCircle size={18} />
+                        <div className="absolute top-2 right-2 text-white bg-[#c28488] rounded-full p-0.5">
+                          <IconCheckCircle size={16} />
                         </div>
                       )}
                     </button>
@@ -777,6 +789,7 @@
         );
       };
 
+      // --- STREAMING_CHUNK:Final Assembly ---
       return (
         <div className="min-h-screen flex flex-col font-sans selection:bg-pink-100 selection:text-pink-900">
           <Navbar />
