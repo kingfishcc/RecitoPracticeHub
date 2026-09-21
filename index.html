@@ -5,11 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>抽唄抽背練習平臺</title>
   
+  <!-- 載入字體 -->
   <link href="https://cdn.jsdelivr.net/npm/gensen-rounded-web@1.0.1/css/gensen-rounded-tw.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@400;500;700&display=swap" rel="stylesheet">
   
+  <!-- 載入 Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
+  <!-- 載入 React & Babel -->
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -19,28 +22,16 @@
       font-family: 'Chiron GoRound TC', 'GenSenRounded TW', sans-serif !important;
     }
     
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #f1f1f1; 
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #e8d5d7; 
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #d49a9e; 
-    }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: #e8d5d7; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #d49a9e; }
     
     @keyframes modalFadeIn {
       from { opacity: 0; transform: scale(0.95) translateY(-10px); }
       to { opacity: 1; transform: scale(1) translateY(0); }
     }
-    .modal-animate {
-      animation: modalFadeIn 0.3s ease-out forwards;
-    }
+    .modal-animate { animation: modalFadeIn 0.3s ease-out forwards; }
   </style>
 </head>
 <body class="bg-[#f9f9fa]">
@@ -49,7 +40,7 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-    // --- Defining SVG Icons ---
+    // --- STREAMING_CHUNK:Defining SVG Icons ---
     const IconSearch = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
     const IconHome = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>;
     const IconBookOpen = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>;
@@ -128,10 +119,9 @@
       return total;
     };
     const TOTAL_TASKS = calculateTotalTasks();
-
-    // --- STREAMING_CHUNK:Initializing App State ---
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrDqOlfsws0EzeTlUFkO9Z9qCQp5r0EkIee8EbMX2udC1ii04FPNy8GrVW7DXySx8f/exec";
 
+    // --- STREAMING_CHUNK:Defining the App Component ---
     function App() {
       const [currentPage, setCurrentPage] = useState('home');
       const [semester, setSemester] = useState(2);
@@ -143,15 +133,17 @@
 
       const calculateScore = (tasksCount) => tasksCount * 100;
 
-      // --- STREAMING_CHUNK:Handling Side Effects and Sync ---
+      // --- STREAMING_CHUNK:Handling Side Effects and Data Fetching ---
       useEffect(() => {
         document.title = '抽唄抽背練習平臺';
         
+        // 載入 Google Sheets 排行榜資料
         if (GOOGLE_SCRIPT_URL) {
           fetch(GOOGLE_SCRIPT_URL)
             .then(res => res.json())
             .then(data => {
               if (Array.isArray(data)) {
+                // 過濾掉測試帳號，不顯示在總榜
                 const filteredData = data.filter(d => d.type !== 'test');
                 const sorted = filteredData.sort((a, b) => Number(b.score) - Number(a.score));
                 setLeaderboard(sorted);
@@ -160,6 +152,7 @@
             .catch(err => console.log("Google Sheets load fallback:", err));
         }
 
+        // 載入本機使用者狀態
         const savedUser = localStorage.getItem('practiceHub_user');
         if (savedUser) {
           try {
@@ -175,7 +168,7 @@
         if (user) {
           localStorage.setItem(`practiceHub_tasks_v6_${user.name}`, JSON.stringify(completedTasks));
           
-          if (user.type === 'test') return;
+          if (user.type === 'test') return; // 測試帳號不寫入總榜
           
           const tasksCount = Object.keys(completedTasks).length;
           const score = calculateScore(tasksCount);
@@ -192,7 +185,8 @@
             
             const sortedBoard = newBoard.sort((a, b) => b.score - a.score);
             
-            if (GOOGLE_SCRIPT_URL) {
+            // 同步上傳到 Google Sheets
+            if (GOOGLE_SCRIPT_URL && tasksCount > 0) {
               fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 body: JSON.stringify({ name: user.name, score, tasksCount, type: user.type })
@@ -239,6 +233,7 @@
 
       const toggleSemester = () => setSemester(prev => (prev === 1 ? 2 : 1));
 
+      // 點擊即完成任務！
       const handleTaskClick = (item) => {
         if (user) {
           setCompletedTasks(prev => ({ ...prev, [item.id]: true }));
@@ -285,7 +280,7 @@
         }
       };
 
-      // --- STREAMING_CHUNK:Rendering Login Modal ---
+      // --- STREAMING_CHUNK:Rendering Login Modal Component ---
       const LoginModal = () => {
         const [guestName, setGuestName] = useState('');
 
@@ -301,7 +296,7 @@
             return;
           }
           if (name === '測試模式' || name === '測試') {
-            alert('此名稱已被保留，請使用您的真實姓名。');
+            alert('此名稱已被保留，請使用其他姓名。');
             return;
           }
           
@@ -375,7 +370,7 @@
         );
       };
 
-      // --- STREAMING_CHUNK:Rendering Navbar ---
+      // --- STREAMING_CHUNK:Rendering Navbar Component ---
       const Navbar = () => (
         <nav className="bg-[#f2e8e9] text-gray-700 shadow-sm sticky top-0 z-50">
           <div className="w-full px-4 md:px-10">
@@ -463,7 +458,7 @@
                     ) : (
                       <button 
                         onClick={() => setShowLoginModal(true)}
-                        className="flex items-center space-x-1.5 bg-[#d49a9e] hover:bg-[#c28488] text-white font-bold py-1.5 px-3 md:py-2 md:px-5 rounded-full transition-all shadow-sm transform hover:-translate-y-0.5 border border-[#c28488] cursor-pointer"
+                        className="flex items-center space-x-1.5 bg-[#82aeb1] hover:bg-[#6c979a] text-white font-bold py-1.5 px-3 md:py-2 md:px-5 rounded-full transition-all shadow-sm transform hover:-translate-y-0.5 border border-[#6c979a] cursor-pointer"
                       >
                         <IconGraduationCap size={18} />
                         <span className="hidden sm:inline">學生登入</span>
@@ -478,7 +473,7 @@
         </nav>
       );
 
-      // --- STREAMING_CHUNK:Rendering Home View ---
+      // --- STREAMING_CHUNK:Rendering Home View Component ---
       const getDisplayLeaderboard = () => {
         let board = [...leaderboard];
         if (user && user.type === 'test') {
@@ -600,7 +595,7 @@
         );
       };
 
-      // --- STREAMING_CHUNK:Rendering Leaderboard View ---
+      // --- STREAMING_CHUNK:Rendering Leaderboard View Component ---
       const LeaderboardView = () => {
         const displayBoard = getDisplayLeaderboard();
         
@@ -690,7 +685,7 @@
         );
       };
 
-      // --- STREAMING_CHUNK:Rendering Subject View ---
+      // --- STREAMING_CHUNK:Rendering Subject View Component ---
       const SubjectView = () => {
         const [subject, grade] = currentPage.split('-');
         const isEnglish = subject === 'english';
@@ -789,7 +784,7 @@
         );
       };
 
-      // --- STREAMING_CHUNK:Final Assembly ---
+      // --- STREAMING_CHUNK:Final App Assembly ---
       return (
         <div className="min-h-screen flex flex-col font-sans selection:bg-pink-100 selection:text-pink-900">
           <Navbar />
@@ -815,6 +810,7 @@
       );
     }
 
+    // 初始化與渲染
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
   </script>
