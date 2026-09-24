@@ -5,42 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>抽唄抽背練習平臺</title>
     
-    <!-- 載入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- 載入 React 與 ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- 載入 Babel 以解析 JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- 載入 Firebase Compat -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
-        /* 優先使用源泉圓體，提供溫潤的視覺體驗 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
         body {
-            font-family: 'GenSenRounded TW', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-            background-color: #f8f9fa;
+            font-family: 'GenSenRounded TW', 'Noto Sans TC', sans-serif;
+            background-color: #f5f5f7;
         }
-        .theme-pink-bg { background-color: #c99c9c; }
-        .theme-pink-text { color: #c99c9c; }
+        .theme-pink-bg { background-color: #be8e8e; }
+        .theme-pink-text { color: #be8e8e; }
         .sage-green-btn { background-color: #82aeb1; }
         .sage-green-btn:hover { background-color: #6c979a; }
-        .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); }
+        .custom-shadow { box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); }
+        .rank-ribbon {
+            position: absolute;
+            top: 0; right: 0;
+            border-style: solid;
+            border-width: 0 40px 40px 0;
+            border-color: transparent;
+        }
+        .rank-ribbon-1 { border-right-color: #fcd34d; }
+        .rank-ribbon-2 { border-right-color: #cbd5e1; }
+        .rank-ribbon-3 { border-right-color: #d97706; }
+        .rank-text {
+            position: absolute;
+            top: 4px; right: 6px;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        // Google Sheets API 網址
+        // Google Sheets API
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrDqOlfsws0EzeTlUFkO9Z9qCQp5r0EkIee8EbMX2udC1ii04FPNy8GrVW7DXySx8f/exec";
 
-        // 乾淨的 Firebase 設定檔
+        // 清理乾淨的 Firebase 金鑰
         const firebaseConfig = {
             apiKey: "AIzaSyAKitKzkqS5_K7lehivcAAZoGX_u4-LsQs",
             authDomain: "typeace-c8f54.firebaseapp.com",
@@ -62,8 +72,8 @@
             const [displayName, setDisplayName] = useState('訪客');
             const [showLoginModal, setShowLoginModal] = useState(false);
             const [guestNameInput, setGuestNameInput] = useState('');
-            const [score, setScore] = useState(0);
             const [isSyncing, setIsSyncing] = useState(false);
+            const [localScore, setLocalScore] = useState(0);
 
             const isTestMode = displayName === '154502';
 
@@ -71,7 +81,7 @@
                 const unsubscribe = auth.onAuthStateChanged((currentUser) => {
                     if (currentUser) {
                         setUser(currentUser);
-                        setDisplayName(currentUser.displayName || 'Google 帳號使用者');
+                        setDisplayName(currentUser.displayName || 'Google 用戶');
                     } else {
                         setUser(null);
                         const savedName = localStorage.getItem('guestName');
@@ -84,11 +94,11 @@
             const handleGoogleLogin = () => {
                 auth.signInWithPopup(googleProvider)
                     .then(() => setShowLoginModal(false))
-                    .catch((error) => alert(`登入發生錯誤: ${error.message}`));
+                    .catch((err) => alert(`登入錯誤: ${err.message}`));
             };
 
             const handleGuestLogin = () => {
-                if (guestNameInput.trim() === '') return;
+                if (!guestNameInput.trim()) return;
                 setDisplayName(guestNameInput.trim());
                 localStorage.setItem('guestName', guestNameInput.trim());
                 setShowLoginModal(false);
@@ -107,8 +117,8 @@
                     setShowLoginModal(true);
                     return;
                 }
-                const newScore = score + 100;
-                setScore(newScore);
+                
+                setLocalScore(prev => prev + 100);
 
                 if (isTestMode) {
                     window.open(url, '_blank');
@@ -119,10 +129,10 @@
                 try {
                     await fetch(GOOGLE_SCRIPT_URL, {
                         method: 'POST',
-                        body: JSON.stringify({ name: displayName, score: newScore, tasksCount: 1, type: user ? 'google' : 'guest' })
+                        body: JSON.stringify({ name: displayName, score: localScore + 100, tasksCount: 1, type: user ? 'google' : 'guest' })
                     });
-                } catch (error) {
-                    console.error("同步失敗:", error);
+                } catch (e) {
+                    console.error("同步失敗", e);
                 } finally {
                     setIsSyncing(false);
                     window.open(url, '_blank');
@@ -130,85 +140,117 @@
             };
 
             return (
-                <div className="min-h-screen pb-10 flex flex-col items-center">
-                    {/* 導覽列 */}
-                    <nav className="w-full bg-white shadow-sm p-4 flex justify-between items-center px-8">
-                        <div className="text-xl font-bold theme-pink-text flex items-center gap-2">
-                            <span>🐟</span> 抽唄抽背練習平臺
-                        </div>
-                        <div>
-                            {displayName !== '訪客' ? (
-                                <div className="flex items-center gap-4">
-                                    <span className={`font-bold ${isTestMode ? 'text-gray-400' : 'text-gray-700'}`}>
-                                        {displayName} {isTestMode && '(測試中)'} {isSyncing && '☁️'}
-                                    </span>
-                                    <button onClick={handleLogout} className="text-sm text-gray-400 hover:text-red-400">登出</button>
-                                </div>
-                            ) : (
-                                <button onClick={() => setShowLoginModal(true)} className="sage-green-btn text-white px-6 py-2 rounded-full font-bold flex items-center gap-2">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
-                                    學生登入
-                                </button>
-                            )}
-                        </div>
-                    </nav>
-
-                    {/* 倒數標籤 */}
-                    <div className="mt-8 bg-white px-6 py-2 rounded-full shadow-sm text-sm font-bold text-gray-600 border border-gray-100 flex items-center gap-2">
+                <div className="min-h-screen flex flex-col items-center pb-20">
+                    
+                    {/* 倒數計時丸子 */}
+                    <div className="mt-8 bg-white px-6 py-2 rounded-full shadow-sm text-sm font-bold text-gray-500 flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full theme-pink-bg"></div>
                         抽背倒數：6 天
                     </div>
 
-                    {/* 年級卡片 */}
-                    <div className="w-full max-w-5xl mt-8 px-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* 隱形導覽列 (只放登入按鈕與狀態) */}
+                    <div className="w-full max-w-5xl px-4 flex justify-end mt-4">
+                        {displayName !== '訪客' ? (
+                            <div className="flex items-center gap-4 bg-white px-4 py-2 rounded-full shadow-sm">
+                                <span className={`font-bold ${isTestMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    {displayName} {isTestMode && '(測試中)'} {isSyncing && '☁️'}
+                                </span>
+                                <button onClick={handleLogout} className="text-sm text-gray-400 hover:text-red-400">登出</button>
+                            </div>
+                        ) : (
+                            <button onClick={() => setShowLoginModal(true)} className="sage-green-btn text-white px-5 py-2.5 rounded-full font-bold flex items-center gap-2 shadow-sm">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
+                                學生登入
+                            </button>
+                        )}
+                    </div>
+
+                    {/* 三大年級卡片區 */}
+                    <div className="w-full max-w-5xl mt-6 px-4 grid grid-cols-1 md:grid-cols-3 gap-6">
                         {[
                             { grade: '國一', en: 'Grade 7', links: { zh: '#', en: '#' } },
                             { grade: '國二', en: 'Grade 8', links: { zh: '#', en: '#' } },
                             { grade: '國三', en: 'Grade 9', links: { zh: '#', en: 'https://share.gemini.google/vR67MybngPM1' } }
                         ].map((g, idx) => (
-                            <div key={idx} className="bg-white rounded-2xl card-shadow overflow-hidden border border-gray-50 flex flex-col">
+                            <div key={idx} className="bg-white rounded-3xl custom-shadow overflow-hidden flex flex-col">
                                 <div className="theme-pink-bg text-white text-center py-6">
                                     <div className="text-2xl font-bold tracking-widest">{g.grade}</div>
-                                    <div className="text-sm font-normal opacity-80 mt-1">{g.en}</div>
+                                    <div className="text-xs font-medium opacity-80 mt-1">{g.en}</div>
                                 </div>
-                                <div className="p-8 flex justify-center gap-8 bg-white">
-                                    <button onClick={() => handleTask(g.links.zh)} className="flex flex-col items-center gap-3 hover:opacity-70 transition-opacity">
-                                        <div className="w-14 h-14 rounded-2xl border-2 border-gray-100 flex items-center justify-center text-gray-400 bg-gray-50">📖</div>
-                                        <span className="font-bold text-gray-600">國文</span>
+                                <div className="p-8 flex justify-center gap-8">
+                                    <button onClick={() => handleTask(g.links.zh)} className="flex flex-col items-center gap-4 hover:opacity-70 transition-opacity">
+                                        <div className="w-16 h-16 rounded-[1.25rem] border border-gray-100 flex items-center justify-center text-gray-400 bg-gray-50 shadow-sm">
+                                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                                        </div>
+                                        <span className="font-bold text-gray-600 text-sm">國文</span>
                                     </button>
-                                    <button onClick={() => handleTask(g.links.en)} className="flex flex-col items-center gap-3 hover:opacity-70 transition-opacity">
-                                        <div className="w-14 h-14 rounded-2xl border-2 border-gray-100 flex items-center justify-center text-gray-400 bg-gray-50">🌐</div>
-                                        <span className="font-bold text-gray-600">英語</span>
+                                    <button onClick={() => handleTask(g.links.en)} className="flex flex-col items-center gap-4 hover:opacity-70 transition-opacity">
+                                        <div className="w-16 h-16 rounded-[1.25rem] border border-gray-100 flex items-center justify-center text-gray-400 bg-gray-50 shadow-sm">
+                                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                                        </div>
+                                        <span className="font-bold text-gray-600 text-sm">英語</span>
                                     </button>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    {/* 練習達人排行榜 (原本在下方的區塊) */}
-                    <div className="w-full max-w-5xl mt-12 bg-white rounded-2xl card-shadow p-6 mb-12">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-gray-700 flex items-center gap-2">🏆 練習達人</h3>
-                            <button className="text-sm theme-pink-text bg-[#f9f2f2] px-4 py-1 rounded-full font-bold">查看完整名單 ></button>
+                    {/* 漂亮版練習達人排行榜 */}
+                    <div className="w-full max-w-5xl mt-12 bg-white rounded-3xl custom-shadow p-8">
+                        <div className="flex justify-between items-center mb-8">
+                            <h3 className="text-xl font-bold text-gray-700 flex items-center gap-2">
+                                <span className="text-[#be8e8e] text-2xl">🏆</span> 練習達人
+                            </h3>
+                            <button className="text-sm theme-pink-text bg-[#faf5f5] px-4 py-1.5 rounded-full font-bold">查看完整名單 ></button>
                         </div>
-                        <div className="text-center text-gray-400 text-sm py-8 border-2 border-dashed border-gray-100 rounded-xl">
-                            {displayName !== '訪客' ? `目前積分：${score}，繼續保持！` : '登入後即可將成績同步至排行榜！'}
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            {[
+                                { rank: 1, name: '王小明', score: 1500, tasks: 15, bg: 'bg-[#fafafa]' },
+                                { rank: 2, name: '李小華', score: 1400, tasks: 14, bg: 'bg-[#fafafa]' },
+                                { rank: 3, name: '陳大文', score: 1200, tasks: 12, bg: 'bg-[#fafafa]' },
+                                { rank: 4, name: '林美麗', score: 800, tasks: 8, bg: 'bg-[#fafafa]' }
+                            ].map((student, idx) => (
+                                <div key={idx} className={`${student.bg} rounded-2xl p-4 flex items-center relative overflow-hidden border border-gray-50`}>
+                                    {/* 名次彩帶 */}
+                                    {student.rank <= 3 && (
+                                        <div className={`rank-ribbon rank-ribbon-${student.rank}`}></div>
+                                    )}
+                                    {student.rank <= 3 && (
+                                        <span className="rank-text">{student.rank}</span>
+                                    )}
+                                    
+                                    {/* 圓形頭像 */}
+                                    <div className="w-12 h-12 rounded-full bg-[#f4e8e8] theme-pink-text flex items-center justify-center font-bold text-lg mr-4 shrink-0">
+                                        {student.name.charAt(0)}
+                                    </div>
+                                    
+                                    {/* 資訊區 */}
+                                    <div>
+                                        <div className="font-bold text-gray-700 text-sm">{student.name}</div>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="bg-[#fef3c7] text-[#92400e] text-[10px] px-2 py-0.5 rounded font-bold tracking-wide">積分 {student.score}</span>
+                                            <span className="text-gray-400 text-[10px]">完課 {student.tasks}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
-                    {/* 登入視窗 */}
+                    {/* 登入視窗 (保留乾淨俐落風格) */}
                     {showLoginModal && (
                         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                             <div className="bg-white rounded-3xl p-8 w-full max-w-sm shadow-xl">
-                                <h2 className="text-xl font-bold text-center mb-6 theme-pink-text">登入抽唄</h2>
-                                <button onClick={handleGoogleLogin} className="w-full mb-4 border border-gray-300 rounded-xl p-3 flex items-center justify-center gap-3 font-bold text-gray-700">
+                                <h2 className="text-xl font-bold text-center mb-6 theme-pink-text">登入平臺</h2>
+                                <button onClick={handleGoogleLogin} className="w-full mb-4 border border-gray-200 hover:bg-gray-50 rounded-xl p-3 flex items-center justify-center gap-3 font-bold text-gray-600 transition-colors">
                                     <svg className="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                                     使用 Google 帳號登入
                                 </button>
-                                <div className="text-center text-xs text-gray-400 font-bold my-4">或者</div>
-                                <input type="text" value={guestNameInput} onChange={(e) => setGuestNameInput(e.target.value)} placeholder="輸入姓名或座號" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none mb-3 bg-gray-50" />
-                                <button onClick={handleGuestLogin} className="w-full sage-green-btn text-white py-3 rounded-xl font-bold">開始挑戰</button>
-                                <button onClick={() => setShowLoginModal(false)} className="mt-4 w-full py-2 text-sm text-gray-400">取消</button>
+                                <div className="text-center text-xs text-gray-300 font-bold my-4">或者</div>
+                                <input type="text" value={guestNameInput} onChange={(e) => setGuestNameInput(e.target.value)} placeholder="輸入姓名或座號" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#be8e8e] mb-3 bg-gray-50" />
+                                <button onClick={handleGuestLogin} className="w-full sage-green-btn text-white py-3 rounded-xl font-bold transition-colors">開始挑戰</button>
+                                <button onClick={() => setShowLoginModal(false)} className="mt-4 w-full py-2 text-sm text-gray-400 hover:text-gray-600">取消</button>
                             </div>
                         </div>
                     )}
