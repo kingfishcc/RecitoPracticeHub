@@ -1,265 +1,905 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>抽唄抽背練習平臺</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>抽唄抽背練習平臺</title>
+  
+  <!-- 載入字體 -->
+  <link href="https://cdn.jsdelivr.net/npm/gensen-rounded-web@1.0.1/css/gensen-rounded-tw.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- 載入 Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- 載入 React & Babel -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    * {
+      font-family: 'Chiron GoRound TC', 'GenSenRounded TW', sans-serif !important;
+    }
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: #e8d5d7; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #d49a9e; }
+    
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-animate { animation: modalFadeIn 0.3s ease-out forwards; }
+  </style>
 
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <!-- Firebase 初始化模組 (已換上乾淨無亂碼的金鑰) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
-        body {
-            font-family: 'GenSenRounded TW', 'Noto Sans TC', sans-serif;
-            background-color: #f5f5f7;
-        }
-        .theme-pink-bg { background-color: #be8e8e; }
-        .theme-pink-text { color: #be8e8e; }
-        .sage-green-btn { background-color: #82aeb1; }
-        .sage-green-btn:hover { background-color: #6c979a; }
-        .custom-shadow { box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); }
-        .rank-ribbon {
-            position: absolute;
-            top: 0; right: 0;
-            border-style: solid;
-            border-width: 0 40px 40px 0;
-            border-color: transparent;
-        }
-        .rank-ribbon-1 { border-right-color: #fcd34d; }
-        .rank-ribbon-2 { border-right-color: #cbd5e1; }
-        .rank-ribbon-3 { border-right-color: #d97706; }
-        .rank-text {
-            position: absolute;
-            top: 4px; right: 6px;
-            color: white;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-    </style>
+    window.initFirebaseAuth = () => {
+      const myFirebaseConfig = {
+        apiKey: "AIzaSyAKitKzkqS5_K7LehivcAAZoGX_u4-LsQs",
+        authDomain: "typeace-c8f54.firebaseapp.com",
+        projectId: "typeace-c8f54",
+        storageBucket: "typeace-c8f54.firebasestorage.app",
+        messagingSenderId: "544799963119",
+        appId: "1:544799963119:web:59f3bf9648c31dc870a81a",
+        measurementId: "G-GXTJJS6Z03"
+      };
+
+      try {
+        const app = initializeApp(myFirebaseConfig);
+        const auth = getAuth(app);
+        
+        // 針對在 iframe 或限制環境中的彈窗登入進行優化設定
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({
+          prompt: 'select_account'
+        });
+
+        window.firebaseAuth = auth;
+        window.firebaseProviders = { GoogleAuthProvider: provider };
+        window.firebaseMethods = { signInWithPopup, onAuthStateChanged, signOut };
+        return true;
+      } catch (err) {
+        console.error("Firebase 初始化失敗:", err);
+        return false;
+      }
+    };
+    
+    window.isFirebaseReady = window.initFirebaseAuth();
+  </script>
 </head>
-<body>
-    <div id="root"></div>
+<body class="bg-[#f9f9fa]">
+  <div id="root"></div>
 
-    <script type="text/babel">
-        // Google Sheets API
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrDqOlfsws0EzeTlUFkO9Z9qCQp5r0EkIee8EbMX2udC1ii04FPNy8GrVW7DXySx8f/exec";
+  <!-- React 應用程式 -->
+  <script type="text/babel" data-type="module">
+    const { useState, useEffect } = React;
 
-        // 清理乾淨的 Firebase 金鑰
-        const firebaseConfig = {
-            apiKey: "AIzaSyAKitKzkqS5_K7lehivcAAZoGX_u4-LsQs",
-            authDomain: "typeace-c8f54.firebaseapp.com",
-            projectId: "typeace-c8f54",
-            storageBucket: "typeace-c8f54.firebasestorage.app",
-            messagingSenderId: "544799963119",
-            appId: "1:544799963119:web:59f3bf9648c31dc870a81a",
-            measurementId: "G-GXTJJS6Z03"
+    // --- SVG 圖示定義 ---
+    const IconSearch = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
+    const IconHome = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>;
+    const IconBookOpen = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>;
+    const IconGlobe = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"></path></svg>;
+    const IconRefreshCw = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>;
+    const IconAlertCircle = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>;
+    const IconChevronRight = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>;
+    const IconFeather = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>;
+    const IconUser = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
+    const IconTrophy = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>;
+    const IconX = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
+    const IconCheckCircle = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>;
+    const IconLogOut = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>;
+    const IconGraduationCap = ({ size = 24, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>;
+
+    // --- 課本資料設定 ---
+    const data = {
+      chinese: {
+        g7: [
+          { id: 'ch-g7-1', title: '夏夜', url: 'https://kingfishcc.github.io/Summer-Night-Rearrange/' },
+          { id: 'ch-g7-2', title: '兒時記趣', url: 'https://kingfishcc.github.io/Childhood-Story-Rearrange/' },
+          { id: 'ch-g7-3', title: '傘', url: 'https://kingfishcc.github.io/The-Umbrella-Rearrange/' }
+        ],
+        g8: [
+          { id: 'ch-g8-1', title: '跳水', url: 'https://kingfishcc.github.io/Diving-Rearrange/' },
+          { id: 'ch-g8-2', title: '風箏', url: 'https://kingfishcc.github.io/Kite-Rearrange/' },
+          { id: 'ch-g8-3', title: '庭中有奇樹', url: 'https://kingfishcc.github.io/In-The-Courtyard-There-Is-A-Strange-Tree-Rearrange/' },
+          { id: 'ch-g8-4', title: '慈烏夜啼', url: 'https://kingfishcc.github.io/Gentle-Crow-Nightly-Wails-Rearrange/' },
+          { id: 'ch-g8-5', title: '愛蓮說', url: 'https://kingfishcc.github.io/On-the-Love-of-the-Lotus-Rearrange/' },
+          { id: 'ch-g8-6', title: '一棵開花的樹', url: 'https://kingfishcc.github.io/A-Blooming-Tree-Rearrange/' },
+          { id: 'ch-g8-7', title: '木蘭詩', url: 'https://kingfishcc.github.io/The-Ballad-of-Mulan-Rearrange/' },
+          { id: 'ch-g8-8', title: '張釋之執法', url: 'https://kingfishcc.github.io/Zhang-Shizhi-Upholds-the-Law-Rearrange/' },
+          { id: 'ch-g8-9', title: '我所知道的康橋', url: 'https://kingfishcc.github.io/The-Cambridge-I-Know-Rearrange/' },
+          { id: 'ch-g8-10', title: '偶然', url: 'https://kingfishcc.github.io/By-Chance-Rearrange/' },
+          { id: 'ch-g8-11', title: '陋室銘', url: 'https://kingfishcc.github.io/Inscription-on-the-Humble-Home-Rearrange/' },
+          { id: 'ch-g8-12', title: '成功是失敗之母', url: 'https://gemini.google.com/share/47312c22ca61' }
+        ],
+        g9: [
+          { id: 'ch-g9-1', title: '戲李白', url: 'https://kingfishcc.github.io/Teasing-Li-Bai-Rearrange/' },
+          { id: 'ch-g9-2', title: '如夢令', url: 'https://kingfishcc.github.io/Lyrics-to-a-Dreamy-Chant-Rearrange/' },
+          { id: 'ch-g9-3', title: '南鄉子', url: 'https://kingfishcc.github.io/Airing-My-Feelings-upon-Climbing-Beigu-Pavilion-of-Jingkou-Rearrange/' },
+          { id: 'ch-g9-4', title: '與宋元思書', url: 'https://kingfishcc.github.io/Letter-to-Song-Yuansi-Rearrange/' },
+          { id: 'ch-g9-5', title: '車過枋寮', url: 'https://kingfishcc.github.io/Fangliao-on-a-Bus-Rearrange/' }
+        ]
+      },
+      english: {
+        g7: { sem1: [], sem2: [{ id: 'en-g7-2-1', title: 'Toast Art', url: 'https://gemini.google.com/share/f7279392c260' }] },
+        g8: {
+          sem1: [],
+          sem2: [
+            { id: 'en-g8-2-1', title: '課本 P.10', url: 'https://gemini.google.com/share/290252f163da' },
+            { id: 'en-g8-2-2', title: '課本 P.55-56', url: 'https://gemini.google.com/share/894b06f0f2ab' },
+            { id: 'en-g8-2-3', title: '課本 P.77-78', url: 'https://gemini.google.com/share/cd3fd7d13db0' },
+            { id: 'en-g8-2-4', title: 'as…as…\n譬喻句型', url: 'https://gemini.google.com/share/0e353becfc6a' }
+          ]
+        },
+        g9: {
+          sem1: [
+            { id: 'en-g9-1-1', title: 'Unit 1\n課本 P.18', url: 'https://share.gemini.google/vR67MybngPM1' }
+          ],
+          sem2: [
+            { id: 'en-g9-2-1', title: 'Unit 1', url: 'https://gemini.google.com/share/059f461e1510' },
+            { id: 'en-g9-2-2', title: 'Unit 2', url: 'https://gemini.google.com/share/ec66c5413ae7' },
+            { id: 'en-g9-2-3', title: 'Unit 3', url: 'https://gemini.google.com/share/194ee2e5fff8' }
+          ]
+        }
+      }
+    };
+
+    const calculateTotalTasks = () => {
+      let total = 0;
+      Object.values(data.chinese).forEach(grade => total += grade.length);
+      Object.values(data.english).forEach(grade => {
+        total += grade.sem1.length + grade.sem2.length;
+      });
+      return total;
+    };
+    const TOTAL_TASKS = calculateTotalTasks();
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrDqOlfsws0EzeTlUFkO9Z9qCQp5r0EkIee8EbMX2udC1ii04FPNy8GrVW7DXySx8f/exec";
+
+    // --- 主應用程式 ---
+    function App() {
+      const [currentPage, setCurrentPage] = useState('home');
+      const [semester, setSemester] = useState(1);
+      
+      const [showLoginModal, setShowLoginModal] = useState(false);
+      const [user, setUser] = useState(null); 
+      const [completedTasks, setCompletedTasks] = useState({}); 
+      const [leaderboard, setLeaderboard] = useState([]);
+      const [isAuthenticating, setIsAuthenticating] = useState(false);
+      const [authError, setAuthError] = useState('');
+
+      const calculateScore = (tasksCount) => tasksCount * 100;
+
+      // 載入資料與監聽登入狀態
+      useEffect(() => {
+        document.title = '抽唄抽背練習平臺';
+        
+        // 取得排行榜
+        if (GOOGLE_SCRIPT_URL) {
+          fetch(GOOGLE_SCRIPT_URL)
+            .then(res => res.json())
+            .then(data => {
+              if (Array.isArray(data)) {
+                const filteredData = data.filter(d => d.type !== 'test');
+                const sorted = filteredData.sort((a, b) => Number(b.score) - Number(a.score));
+                setLeaderboard(sorted);
+              }
+            })
+            .catch(err => console.log("Google Sheets load fallback:", err));
+        }
+
+        // 讀取本機紀錄
+        const savedUser = localStorage.getItem('practiceHub_user');
+        if (savedUser) {
+          try {
+            const parsedUser = JSON.parse(savedUser);
+            setUser(parsedUser);
+            const savedTasks = localStorage.getItem(`practiceHub_tasks_v6_${parsedUser.name}`);
+            if (savedTasks) setCompletedTasks(JSON.parse(savedTasks));
+          } catch (e) {}
+        }
+
+        // 監聽 Google (Firebase) 登入狀態
+        const checkFirebase = setInterval(() => {
+          if (window.isFirebaseReady && window.firebaseMethods) {
+            clearInterval(checkFirebase);
+            const unsubscribe = window.firebaseMethods.onAuthStateChanged(window.firebaseAuth, (firebaseUser) => {
+              if (firebaseUser && firebaseUser.displayName) {
+                const name = firebaseUser.displayName.substring(0, 12);
+                const newUser = { type: 'google', name: name, photoURL: firebaseUser.photoURL };
+                setUser(newUser);
+                localStorage.setItem('practiceHub_user', JSON.stringify(newUser));
+                
+                const savedTasks = localStorage.getItem(`practiceHub_tasks_v6_${name}`);
+                if (savedTasks) setCompletedTasks(JSON.parse(savedTasks));
+              }
+            });
+            return () => unsubscribe();
+          }
+        }, 500);
+
+        return () => clearInterval(checkFirebase);
+      }, []);
+
+      // 同步成績到 Google Sheets
+      useEffect(() => {
+        if (user) {
+          localStorage.setItem(`practiceHub_tasks_v6_${user.name}`, JSON.stringify(completedTasks));
+          
+          if (user.type === 'test') return;
+          
+          const tasksCount = Object.keys(completedTasks).length;
+          const score = calculateScore(tasksCount);
+          
+          setLeaderboard(prev => {
+            const existingIdx = prev.findIndex(p => p.name === user.name);
+            let newBoard = [...prev];
+            
+            if (existingIdx >= 0) {
+              newBoard[existingIdx] = { ...newBoard[existingIdx], tasksCount, score };
+            } else if (tasksCount > 0) {
+              newBoard.push({ name: user.name, type: user.type, tasksCount, score });
+            }
+            
+            const sortedBoard = newBoard.sort((a, b) => b.score - a.score);
+            
+            if (GOOGLE_SCRIPT_URL && tasksCount > 0) {
+              fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ name: user.name, score, tasksCount, type: user.type })
+              }).catch(err => console.log("Google Sheets sync error:", err));
+            }
+            
+            return sortedBoard;
+          });
+        }
+      }, [completedTasks, user]);
+
+      // --- 登入邏輯 ---
+      const loginGuest = (type, name) => {
+        const newUser = { type, name };
+        setUser(newUser);
+        setShowLoginModal(false);
+        localStorage.setItem('practiceHub_user', JSON.stringify(newUser));
+        const savedTasks = localStorage.getItem(`practiceHub_tasks_v6_${name}`);
+        if (savedTasks) {
+          setCompletedTasks(JSON.parse(savedTasks));
+        } else {
+          setCompletedTasks({});
+        }
+      };
+
+      const loginGoogle = async () => {
+        if (!window.isFirebaseReady || !window.firebaseMethods) {
+          setAuthError("系統初始化中，請稍候...");
+          return;
+        }
+
+        setIsAuthenticating(true);
+        setAuthError('');
+        try {
+          // 使用已經設定好參數的 provider
+          const provider = window.firebaseProviders.GoogleAuthProvider;
+          await window.firebaseMethods.signInWithPopup(window.firebaseAuth, provider);
+          setShowLoginModal(false);
+        } catch (err) {
+          console.error("Google 登入失敗:", err);
+          if (err.code === 'auth/unauthorized-domain') {
+            setAuthError("【網域未授權】請確認網址已加入白名單。");
+          } else if (err.code === 'auth/popup-closed-by-user') {
+            setAuthError("您關閉了登入視窗。");
+          } else if (err.code === 'auth/popup-blocked') {
+            setAuthError("瀏覽器阻擋了彈出視窗，請允許顯示彈出視窗。");
+          } else if (err.message.includes('Cross-Origin-Opener-Policy')) {
+            setAuthError("【環境限制】目前的預覽環境阻擋了 Google 登入。請將網頁部署到 GitHub Pages 後即可正常登入！");
+          } else {
+            setAuthError(`登入發生錯誤 (${err.code})，請稍後再試。`);
+          }
+        } finally {
+          setIsAuthenticating(false);
+        }
+      };
+
+      const logout = async () => {
+        if (user?.type === 'google' && window.isFirebaseReady) {
+          try { await window.firebaseMethods.signOut(window.firebaseAuth); } catch(e) {}
+        }
+        setUser(null);
+        setCompletedTasks({});
+        localStorage.removeItem('practiceHub_user');
+      };
+
+      // --- 介面操作函數 ---
+      const getDaysUntilThursday = () => {
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        return (4 - dayOfWeek + 7) % 7;
+      };
+      const daysUntilThursday = getDaysUntilThursday();
+
+      const handleNavigate = (page) => {
+        setCurrentPage(page);
+        window.scrollTo(0, 0);
+      };
+
+      const toggleSemester = () => setSemester(prev => (prev === 1 ? 2 : 1));
+
+      const handleTaskClick = (item) => {
+        if (user) {
+          setCompletedTasks(prev => ({ ...prev, [item.id]: true }));
+        }
+        window.open(item.url, '_blank', 'noopener,noreferrer');
+      };
+
+      const handleSearch = (e) => {
+        if (e.key === 'Enter') {
+          const term = e.target.value.trim().toLowerCase();
+          if (!term) return;
+          let found = false;
+
+          for (const [grade, lessons] of Object.entries(data.chinese)) {
+            if (lessons.some(l => l.title.toLowerCase().includes(term))) {
+              handleNavigate(`chinese-${grade}`);
+              found = true;
+              break;
+            }
+          }
+
+          if (!found) {
+            for (const [grade, semesters] of Object.entries(data.english)) {
+              if (semesters.sem1.some(l => l.title.toLowerCase().includes(term))) {
+                setSemester(1);
+                handleNavigate(`english-${grade}`);
+                found = true;
+                break;
+              }
+              if (semesters.sem2.some(l => l.title.toLowerCase().includes(term))) {
+                setSemester(2);
+                handleNavigate(`english-${grade}`);
+                found = true;
+                break;
+              }
+            }
+          }
+
+          if (found) {
+            e.target.value = '';
+          } else {
+            alert('找不到符合的課文名稱喔！請試試輸入其他關鍵字。');
+          }
+        }
+      };
+
+      // --- 登入彈跳視窗組件 ---
+      const LoginModal = () => {
+        const [guestName, setGuestName] = useState('');
+
+        if (!showLoginModal) return null;
+
+        const handleGuestLogin = (e) => {
+          e.preventDefault();
+          const name = guestName.trim();
+          if (!name) return;
+          if (name === '154502') { loginGuest('test', '測試模式'); return; }
+          if (name === '測試模式' || name === '測試') { alert('此名稱已被保留，請使用其他姓名。'); return; }
+          loginGuest('guest', name);
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const googleProvider = new firebase.auth.GoogleAuthProvider();
+        return (
+          <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl modal-animate border border-gray-100 flex flex-col">
+              <div className="px-8 pt-8 pb-4 text-center border-b border-gray-50 flex-shrink-0">
+                <h2 className="text-2xl font-bold text-gray-800 tracking-wider mb-2">學生登入</h2>
+                <p className="text-sm text-gray-500 font-medium">請選擇您的登入方式</p>
+              </div>
 
-        const { useState, useEffect } = React;
-
-        function App() {
-            const [user, setUser] = useState(null);
-            const [displayName, setDisplayName] = useState('訪客');
-            const [showLoginModal, setShowLoginModal] = useState(false);
-            const [guestNameInput, setGuestNameInput] = useState('');
-            const [isSyncing, setIsSyncing] = useState(false);
-            const [localScore, setLocalScore] = useState(0);
-
-            const isTestMode = displayName === '154502';
-
-            useEffect(() => {
-                const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-                    if (currentUser) {
-                        setUser(currentUser);
-                        setDisplayName(currentUser.displayName || 'Google 用戶');
-                    } else {
-                        setUser(null);
-                        const savedName = localStorage.getItem('guestName');
-                        if (savedName) setDisplayName(savedName);
-                    }
-                });
-                return () => unsubscribe();
-            }, []);
-
-            const handleGoogleLogin = () => {
-                auth.signInWithPopup(googleProvider)
-                    .then(() => setShowLoginModal(false))
-                    .catch((err) => alert(`登入錯誤: ${err.message}`));
-            };
-
-            const handleGuestLogin = () => {
-                if (!guestNameInput.trim()) return;
-                setDisplayName(guestNameInput.trim());
-                localStorage.setItem('guestName', guestNameInput.trim());
-                setShowLoginModal(false);
-            };
-
-            const handleLogout = () => {
-                auth.signOut().then(() => {
-                    setDisplayName('訪客');
-                    localStorage.removeItem('guestName');
-                });
-            };
-
-            const handleTask = async (url) => {
-                if (displayName === '訪客') {
-                    alert("請先點擊右上角「學生登入」喔！");
-                    setShowLoginModal(true);
-                    return;
-                }
+              <div className="p-8 space-y-6">
+                {/* 1. Google 登入按鈕 (Firebase) */}
+                <button 
+                  onClick={loginGoogle}
+                  disabled={isAuthenticating}
+                  className="w-full group relative flex flex-col p-4 rounded-2xl border-2 border-blue-200 bg-white hover:bg-blue-50/40 transition-all text-left overflow-hidden cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="flex items-center mb-2 relative z-10">
+                    <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-lg mr-3 group-hover:scale-110 transition-transform">
+                      G
+                    </div>
+                    <span className="font-bold text-blue-600 text-lg">
+                      {isAuthenticating ? '連線登入中...' : '使用 Google 帳號登入'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 relative z-10 leading-relaxed">
+                    以您的 Google 姓名作為身分，成績會自動同步至排行榜。
+                  </p>
+                </button>
                 
-                setLocalScore(prev => prev + 100);
+                {authError && (
+                  <p className="text-xs text-red-500 font-bold bg-red-50 p-2 rounded-lg text-center mt-[-10px]">{authError}</p>
+                )}
 
-                if (isTestMode) {
-                    window.open(url, '_blank');
-                    return;
-                }
-
-                setIsSyncing(true);
-                try {
-                    await fetch(GOOGLE_SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ name: displayName, score: localScore + 100, tasksCount: 1, type: user ? 'google' : 'guest' })
-                    });
-                } catch (e) {
-                    console.error("同步失敗", e);
-                } finally {
-                    setIsSyncing(false);
-                    window.open(url, '_blank');
-                }
-            };
-
-            return (
-                <div className="min-h-screen flex flex-col items-center pb-20">
-                    
-                    {/* 倒數計時丸子 */}
-                    <div className="mt-8 bg-white px-6 py-2 rounded-full shadow-sm text-sm font-bold text-gray-500 flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full theme-pink-bg"></div>
-                        抽背倒數：6 天
-                    </div>
-
-                    {/* 隱形導覽列 (只放登入按鈕與狀態) */}
-                    <div className="w-full max-w-5xl px-4 flex justify-end mt-4">
-                        {displayName !== '訪客' ? (
-                            <div className="flex items-center gap-4 bg-white px-4 py-2 rounded-full shadow-sm">
-                                <span className={`font-bold ${isTestMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                    {displayName} {isTestMode && '(測試中)'} {isSyncing && '☁️'}
-                                </span>
-                                <button onClick={handleLogout} className="text-sm text-gray-400 hover:text-red-400">登出</button>
-                            </div>
-                        ) : (
-                            <button onClick={() => setShowLoginModal(true)} className="sage-green-btn text-white px-5 py-2.5 rounded-full font-bold flex items-center gap-2 shadow-sm">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
-                                學生登入
-                            </button>
-                        )}
-                    </div>
-
-                    {/* 三大年級卡片區 */}
-                    <div className="w-full max-w-5xl mt-6 px-4 grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {[
-                            { grade: '國一', en: 'Grade 7', links: { zh: '#', en: '#' } },
-                            { grade: '國二', en: 'Grade 8', links: { zh: '#', en: '#' } },
-                            { grade: '國三', en: 'Grade 9', links: { zh: '#', en: 'https://share.gemini.google/vR67MybngPM1' } }
-                        ].map((g, idx) => (
-                            <div key={idx} className="bg-white rounded-3xl custom-shadow overflow-hidden flex flex-col">
-                                <div className="theme-pink-bg text-white text-center py-6">
-                                    <div className="text-2xl font-bold tracking-widest">{g.grade}</div>
-                                    <div className="text-xs font-medium opacity-80 mt-1">{g.en}</div>
-                                </div>
-                                <div className="p-8 flex justify-center gap-8">
-                                    <button onClick={() => handleTask(g.links.zh)} className="flex flex-col items-center gap-4 hover:opacity-70 transition-opacity">
-                                        <div className="w-16 h-16 rounded-[1.25rem] border border-gray-100 flex items-center justify-center text-gray-400 bg-gray-50 shadow-sm">
-                                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                                        </div>
-                                        <span className="font-bold text-gray-600 text-sm">國文</span>
-                                    </button>
-                                    <button onClick={() => handleTask(g.links.en)} className="flex flex-col items-center gap-4 hover:opacity-70 transition-opacity">
-                                        <div className="w-16 h-16 rounded-[1.25rem] border border-gray-100 flex items-center justify-center text-gray-400 bg-gray-50 shadow-sm">
-                                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
-                                        </div>
-                                        <span className="font-bold text-gray-600 text-sm">英語</span>
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* 漂亮版練習達人排行榜 */}
-                    <div className="w-full max-w-5xl mt-12 bg-white rounded-3xl custom-shadow p-8">
-                        <div className="flex justify-between items-center mb-8">
-                            <h3 className="text-xl font-bold text-gray-700 flex items-center gap-2">
-                                <span className="text-[#be8e8e] text-2xl">🏆</span> 練習達人
-                            </h3>
-                            <button className="text-sm theme-pink-text bg-[#faf5f5] px-4 py-1.5 rounded-full font-bold">查看完整名單 ></button>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            {[
-                                { rank: 1, name: '王小明', score: 1500, tasks: 15, bg: 'bg-[#fafafa]' },
-                                { rank: 2, name: '李小華', score: 1400, tasks: 14, bg: 'bg-[#fafafa]' },
-                                { rank: 3, name: '陳大文', score: 1200, tasks: 12, bg: 'bg-[#fafafa]' },
-                                { rank: 4, name: '林美麗', score: 800, tasks: 8, bg: 'bg-[#fafafa]' }
-                            ].map((student, idx) => (
-                                <div key={idx} className={`${student.bg} rounded-2xl p-4 flex items-center relative overflow-hidden border border-gray-50`}>
-                                    {/* 名次彩帶 */}
-                                    {student.rank <= 3 && (
-                                        <div className={`rank-ribbon rank-ribbon-${student.rank}`}></div>
-                                    )}
-                                    {student.rank <= 3 && (
-                                        <span className="rank-text">{student.rank}</span>
-                                    )}
-                                    
-                                    {/* 圓形頭像 */}
-                                    <div className="w-12 h-12 rounded-full bg-[#f4e8e8] theme-pink-text flex items-center justify-center font-bold text-lg mr-4 shrink-0">
-                                        {student.name.charAt(0)}
-                                    </div>
-                                    
-                                    {/* 資訊區 */}
-                                    <div>
-                                        <div className="font-bold text-gray-700 text-sm">{student.name}</div>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <span className="bg-[#fef3c7] text-[#92400e] text-[10px] px-2 py-0.5 rounded font-bold tracking-wide">積分 {student.score}</span>
-                                            <span className="text-gray-400 text-[10px]">完課 {student.tasks}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* 登入視窗 (保留乾淨俐落風格) */}
-                    {showLoginModal && (
-                        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                            <div className="bg-white rounded-3xl p-8 w-full max-w-sm shadow-xl">
-                                <h2 className="text-xl font-bold text-center mb-6 theme-pink-text">登入平臺</h2>
-                                <button onClick={handleGoogleLogin} className="w-full mb-4 border border-gray-200 hover:bg-gray-50 rounded-xl p-3 flex items-center justify-center gap-3 font-bold text-gray-600 transition-colors">
-                                    <svg className="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                                    使用 Google 帳號登入
-                                </button>
-                                <div className="text-center text-xs text-gray-300 font-bold my-4">或者</div>
-                                <input type="text" value={guestNameInput} onChange={(e) => setGuestNameInput(e.target.value)} placeholder="輸入姓名或座號" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#be8e8e] mb-3 bg-gray-50" />
-                                <button onClick={handleGuestLogin} className="w-full sage-green-btn text-white py-3 rounded-xl font-bold transition-colors">開始挑戰</button>
-                                <button onClick={() => setShowLoginModal(false)} className="mt-4 w-full py-2 text-sm text-gray-400 hover:text-gray-600">取消</button>
-                            </div>
-                        </div>
-                    )}
+                <div className="relative flex items-center py-2">
+                  <div className="flex-grow border-t border-gray-200"></div>
+                  <span className="flex-shrink-0 mx-4 text-gray-400 text-sm font-medium">或</span>
+                  <div className="flex-grow border-t border-gray-200"></div>
                 </div>
-            );
+
+                {/* 2. 訪客登入區塊 */}
+                <form onSubmit={handleGuestLogin} className="flex flex-col space-y-4">
+                  <p className="text-sm font-bold text-gray-700">自訂訪客姓名：</p>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <IconUser className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      value={guestName}
+                      onChange={(e) => setGuestName(e.target.value)}
+                      placeholder="例如：3號王小明"
+                      className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-gray-50 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#82aeb1] focus:border-[#82aeb1] transition-colors text-gray-700"
+                    />
+                  </div>
+                  <button 
+                    type="submit"
+                    disabled={!guestName.trim() || isAuthenticating}
+                    className="w-full py-3 bg-[#82aeb1] hover:bg-[#6c979a] disabled:bg-gray-300 text-white rounded-xl font-bold transition-colors cursor-pointer text-lg flex justify-center items-center shadow-sm"
+                  >
+                    進入練習
+                  </button>
+                </form>
+              </div>
+
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex-shrink-0">
+                <button 
+                  onClick={() => setShowLoginModal(false)}
+                  className="w-full py-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-xl font-bold flex items-center justify-center transition-colors cursor-pointer"
+                >
+                  <IconX size={20} className="mr-1" /> 取消
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      // --- 導覽列組件 ---
+      const Navbar = () => (
+        <nav className="bg-[#f2e8e9] text-gray-700 shadow-sm sticky top-0 z-50">
+          <div className="w-full px-4 md:px-10">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center cursor-pointer flex-shrink-0" onClick={() => handleNavigate('home')}>
+                <span className="font-bold text-xl md:text-2xl tracking-wider text-[#d49a9e]">PRACTICE<span className="text-gray-500">HUB</span></span>
+              </div>
+              
+              <div className="flex-1 flex items-center justify-end md:justify-between ml-4">
+                <div className="max-w-md w-full mx-4 hidden md:block">
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <IconSearch className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      onKeyDown={handleSearch}
+                      className="block w-full pl-10 pr-3 py-2 border border-transparent rounded-full leading-5 bg-white bg-opacity-70 text-gray-700 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#d49a9e] sm:text-sm transition-colors"
+                      placeholder="搜尋課文名稱..."
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2 md:space-x-6 flex-shrink-0">
+                  <div className="hidden md:flex items-center space-x-6">
+                    <button onClick={() => handleNavigate('home')} className="hover:text-[#d49a9e] font-medium transition-colors h-16 flex items-center cursor-pointer">首頁</button>
+                    
+                    <div className="relative group cursor-pointer font-medium h-16 flex items-center">
+                      <span className="hover:text-[#d49a9e] transition-colors">國文 ▾</span>
+                      <div className="absolute left-1/2 -translate-x-1/2 top-14 pt-2 w-24 hidden group-hover:block z-50">
+                        <div className="bg-white shadow-lg rounded-md overflow-hidden border border-gray-100 text-center text-sm">
+                          <div className="py-2 hover:bg-pink-50 text-gray-700 cursor-pointer" onClick={() => handleNavigate('chinese-g7')}>國一 G7</div>
+                          <div className="py-2 hover:bg-pink-50 text-gray-700 cursor-pointer" onClick={() => handleNavigate('chinese-g8')}>國二 G8</div>
+                          <div className="py-2 hover:bg-pink-50 text-gray-700 cursor-pointer" onClick={() => handleNavigate('chinese-g9')}>國三 G9</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="relative group cursor-pointer font-medium h-16 flex items-center">
+                      <span className="hover:text-[#d49a9e] transition-colors">英語 ▾</span>
+                      <div className="absolute left-1/2 -translate-x-1/2 top-14 pt-2 w-24 hidden group-hover:block z-50">
+                        <div className="bg-white shadow-lg rounded-md overflow-hidden border border-gray-100 text-center text-sm">
+                          <div className="py-2 hover:bg-pink-50 text-gray-700 cursor-pointer" onClick={() => handleNavigate('english-g7')}>國一 G7</div>
+                          <div className="py-2 hover:bg-pink-50 text-gray-700 cursor-pointer" onClick={() => handleNavigate('english-g8')}>國二 G8</div>
+                          <div className="py-2 hover:bg-pink-50 text-gray-700 cursor-pointer" onClick={() => handleNavigate('english-g9')}>國三 G9</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center ml-2 md:border-l md:border-[#e8d5d7] md:pl-4">
+                    {user ? (
+                      <div className="relative group">
+                        <button className="flex items-center space-x-2 bg-white/60 hover:bg-white rounded-full py-1.5 px-3 border border-pink-100 transition-colors cursor-pointer">
+                          {user.photoURL ? (
+                            <img src={user.photoURL} alt="avatar" className="w-8 h-8 rounded-full shadow-sm object-cover" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full text-white flex items-center justify-center text-sm font-bold shadow-sm bg-[#d49a9e]">
+                              {user.name.charAt(0)}
+                            </div>
+                          )}
+                          <span className="font-bold hidden sm:block max-w-[100px] truncate text-gray-700">{user.name}</span>
+                        </button>
+                        
+                        <div className="absolute right-0 top-12 pt-2 w-56 hidden group-hover:block z-50">
+                          <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100">
+                            <div className="p-4 border-b border-gray-50 bg-pink-50/50">
+                              <p className="text-sm font-bold truncate mb-2 text-gray-800">{user.name}</p>
+                              <div className="grid grid-cols-2 gap-2 text-xs mb-2">
+                                <div className="bg-white p-2 rounded border border-gray-100 shadow-sm text-center">
+                                  <p className="text-gray-400 mb-1">完成進度</p>
+                                  <p className="font-bold text-gray-700">{Object.keys(completedTasks).length} <span className="text-[10px] text-gray-400">/ {TOTAL_TASKS}</span></p>
+                                </div>
+                                <div className="bg-white p-2 rounded border border-gray-100 shadow-sm text-center">
+                                  <p className="text-gray-400 mb-1">總積分</p>
+                                  <p className="font-bold text-yellow-500">{calculateScore(Object.keys(completedTasks).length)}</p>
+                                </div>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2 overflow-hidden">
+                                <div className="bg-[#d49a9e] h-1.5 rounded-full" style={{ width: `${(Object.keys(completedTasks).length / TOTAL_TASKS) * 100}%` }}></div>
+                              </div>
+                            </div>
+                            <button onClick={logout} className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 flex items-center transition-colors cursor-pointer">
+                              <IconLogOut size={16} className="mr-2" /> 登出帳號
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      // 綠色風格登入按鈕
+                      <button 
+                        onClick={() => setShowLoginModal(true)}
+                        className="flex items-center space-x-1.5 bg-[#82aeb1] hover:bg-[#6c979a] text-white font-bold py-1.5 px-3 md:py-2 md:px-5 rounded-full transition-all shadow-sm transform hover:-translate-y-0.5 border border-[#6c979a] cursor-pointer"
+                      >
+                        <IconGraduationCap size={18} />
+                        <span className="hidden sm:inline">學生登入</span>
+                        <span className="sm:hidden">登入</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+      );
+
+      // --- 首頁組件 ---
+      const getDisplayLeaderboard = () => {
+        let board = [...leaderboard];
+        if (user && user.type === 'test') {
+          const testTasksCount = Object.keys(completedTasks).length;
+          const testScore = calculateScore(testTasksCount);
+          board.push({ name: user.name, tasksCount: testTasksCount, score: testScore, type: 'test' });
+        }
+        return board.sort((a, b) => b.score - a.score);
+      };
+
+      const HomeView = () => {
+        const displayBoard = getDisplayLeaderboard();
+        
+        return (
+          <div className="flex-1 bg-[#f9f9fa] pb-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+              <div className="bg-[#e2e2e6] rounded-[2rem] p-8 md:p-12 text-center shadow-sm relative overflow-hidden flex flex-col items-center">
+                <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-pink-200 via-transparent to-transparent"></div>
+                <h1 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide relative z-10 flex flex-col sm:flex-row justify-center items-center">
+                  <span className="text-[#d49a9e]">抽背練習</span>
+                  <span className="text-gray-700">統整平臺</span>
+                </h1>
+                <p className="text-gray-500 font-medium tracking-widest relative z-10 mb-6 text-sm md:text-base">週四晨間抽背，你，準備好了嗎？</p>
+                
+                <div className="flex flex-col sm:flex-row items-center gap-4 relative z-10">
+                  <div className="bg-white/80 backdrop-blur-sm px-5 py-2 rounded-full shadow-sm border border-pink-100 flex items-center text-sm text-gray-600">
+                    <span className="w-2 h-2 rounded-full bg-[#d49a9e] mr-2 animate-pulse"></span>
+                    抽背倒數：<span className="font-bold text-[#d49a9e] ml-1">{daysUntilThursday === 0 ? '就在今天！' : `${daysUntilThursday} 天`}</span>
+                  </div>
+                  
+                  {user && Object.keys(completedTasks).length > 0 && (
+                    <div className="bg-white px-5 py-2 rounded-full shadow-sm border border-gray-100 flex items-center text-sm">
+                      <span className="text-gray-500 mr-2">總積分:</span>
+                      <span className="font-bold text-yellow-500">{calculateScore(Object.keys(completedTasks).length)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                {[
+                  { id: 'g7', title: '國一', subtitle: 'Grade 7' },
+                  { id: 'g8', title: '國二', subtitle: 'Grade 8' },
+                  { id: 'g9', title: '國三', subtitle: 'Grade 9' }
+                ].map((grade) => (
+                  <div key={grade.id} className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100 group transform hover:-translate-y-1">
+                    <div className="bg-gradient-to-r from-[#d49a9e] to-[#c28488] py-4 text-center relative overflow-hidden">
+                      <div className="absolute top-0 right-0 -mt-2 -mr-2 w-16 h-16 bg-white opacity-10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
+                      <h2 className="text-2xl font-bold text-white tracking-widest relative z-10">{grade.title}</h2>
+                      <p className="text-pink-100 text-xs font-medium relative z-10 opacity-80">{grade.subtitle}</p>
+                    </div>
+                    <div className="px-4 py-6 flex justify-center space-x-8">
+                      <button 
+                        onClick={() => handleNavigate(`chinese-${grade.id}`)}
+                        className="flex flex-col items-center group/btn w-20 cursor-pointer"
+                      >
+                        <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover/btn:bg-pink-50 group-hover/btn:text-[#d49a9e] transition-colors shadow-sm text-gray-400 border border-gray-100 group-hover/btn:border-[#d49a9e]">
+                          <IconBookOpen size={24} />
+                        </div>
+                        <span className="mt-3 text-gray-600 font-bold text-sm group-hover/btn:text-[#d49a9e] transition-colors tracking-wider">國文</span>
+                      </button>
+                      <button 
+                        onClick={() => handleNavigate(`english-${grade.id}`)}
+                        className="flex flex-col items-center group/btn w-20 cursor-pointer"
+                      >
+                        <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover/btn:bg-pink-50 group-hover/btn:text-[#d49a9e] transition-colors shadow-sm text-gray-400 border border-gray-100 group-hover/btn:border-[#d49a9e]">
+                          <IconGlobe size={24} />
+                        </div>
+                        <span className="mt-3 text-gray-600 font-bold text-sm group-hover/btn:text-[#d49a9e] transition-colors tracking-wider">英語</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100">
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex items-center text-gray-700">
+                    <IconTrophy size={24} className="text-[#eeb375] mr-2" />
+                    <h3 className="text-xl font-bold tracking-wider">練習達人</h3>
+                  </div>
+                  <button 
+                    onClick={() => handleNavigate('leaderboard')}
+                    className="text-sm font-bold text-[#d49a9e] hover:text-[#c28488] flex items-center bg-pink-50 px-3 py-1.5 rounded-full transition-colors cursor-pointer"
+                  >
+                    查看完整名單 <IconChevronRight size={16} />
+                  </button>
+                </div>
+                
+                {displayBoard.length === 0 ? (
+                  <div className="text-center py-8 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                    <p className="text-gray-500 font-medium tracking-wide">目前尚未有挑戰者，趕快登入成為第一名吧！</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {displayBoard.slice(0, 4).map((player, index) => (
+                      <div key={index} className="flex items-center p-3 rounded-2xl bg-gray-50 border border-gray-100 hover:bg-white hover:shadow-md transition-all relative overflow-hidden group">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold mr-3 flex-shrink-0 text-lg border-2 border-white shadow-sm bg-[#d49a9e] text-white overflow-hidden">
+                          {player.name.charAt(0)}
+                        </div>
+                        <div className="flex-1 min-w-0 pr-4">
+                          <div className="font-bold truncate text-gray-700">
+                            {player.name}
+                          </div>
+                          <div className="flex items-center mt-0.5">
+                            <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 rounded font-bold mr-1">積分 {player.score}</span>
+                            <span className="text-[10px] text-gray-400 font-medium">完課 {player.tasksCount}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      // --- 排行榜組件 ---
+      const LeaderboardView = () => {
+        const displayBoard = getDisplayLeaderboard();
+        
+        return (
+          <div className="flex-1 bg-[#f9f9fa] pb-12">
+            <div className="bg-white border-b border-gray-100 px-6 py-3 flex items-center text-sm text-gray-500 shadow-sm">
+              <button onClick={() => handleNavigate('home')} className="hover:text-[#d49a9e] flex items-center cursor-pointer">
+                <IconHome size={16} className="mr-1" /> 首頁
+              </button>
+              <IconChevronRight size={16} className="mx-2 text-gray-300" />
+              <span className="text-[#d49a9e] font-medium">練習達人</span>
+            </div>
+
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+              <div className="text-center mb-10">
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-yellow-50 text-yellow-500 rounded-full mb-4 shadow-sm border border-yellow-100">
+                  <IconTrophy size={40} />
+                </div>
+                <h1 className="text-4xl font-bold text-gray-700 tracking-widest mb-2">練習達人</h1>
+                <p className="text-gray-500">努力練習，爭取最高榮耀！</p>
+              </div>
+
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="grid grid-cols-12 gap-4 p-4 border-b border-gray-100 bg-gray-50 text-gray-500 font-bold text-sm tracking-wider">
+                  <div className="col-span-2 text-center">名次</div>
+                  <div className="col-span-4 pl-4">挑戰者姓名</div>
+                  <div className="col-span-3 text-center hidden sm:block">完成數量</div>
+                  <div className="col-span-6 sm:col-span-3 text-right pr-4 text-yellow-600">總積分</div>
+                </div>
+                
+                <div className="divide-y divide-gray-50">
+                  {displayBoard.length === 0 ? (
+                    <div className="p-12 text-center text-gray-500 tracking-wider">
+                      目前尚未有挑戰者，趕快去練習獲取積分吧！
+                    </div>
+                  ) : (
+                    displayBoard.map((player, index) => {
+                      const isCurrentUser = user && player.name === user.name;
+                      
+                      return (
+                        <div key={index} className={`grid grid-cols-12 gap-4 p-4 items-center transition-colors ${isCurrentUser ? 'bg-pink-50/50' : 'hover:bg-gray-50/50'}`}>
+                          <div className="col-span-2 flex justify-center items-center">
+                            {index === 0 ? <span className="text-2xl drop-shadow-sm">🥇</span> : 
+                             index === 1 ? <span className="text-2xl drop-shadow-sm">🥈</span> : 
+                             index === 2 ? <span className="text-2xl drop-shadow-sm">🥉</span> : 
+                             <span className="text-lg font-bold text-gray-400 w-8 text-center">{index + 1}</span>}
+                          </div>
+                          
+                          <div className="col-span-4 flex items-center pl-4">
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold mr-3 border-2 border-white shadow-sm flex-shrink-0 bg-[#d49a9e] text-white">
+                              {player.name.charAt(0)}
+                            </div>
+                            <span className="font-bold truncate flex items-center text-[#d49a9e]">
+                              {player.name}
+                              {isCurrentUser && <span className="ml-2 text-[10px] text-white px-2 py-0.5 rounded-full font-bold bg-[#d49a9e]">YOU</span>}
+                            </span>
+                          </div>
+
+                          <div className="col-span-3 text-center hidden sm:block">
+                            <span className="text-base font-bold text-gray-600">{player.tasksCount}</span>
+                            <span className="text-xs text-gray-400 ml-1">/ {TOTAL_TASKS}</span>
+                          </div>
+
+                          <div className="col-span-6 sm:col-span-3 text-right pr-4">
+                            <span className="text-xl font-black text-yellow-500 font-mono tracking-tighter drop-shadow-sm">{player.score}</span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      // --- 科目內容組件 ---
+      const SubjectView = () => {
+        const [subject, grade] = currentPage.split('-');
+        const isEnglish = subject === 'english';
+        
+        let contentList = [];
+        if (isEnglish) {
+          contentList = data.english[grade][semester === 1 ? 'sem1' : 'sem2'];
+        } else {
+          contentList = data.chinese[grade];
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+        const fullWidthGradeMap = { 'g7': '７', 'g8': '８', 'g9': '９' };
+        const gradeNumber = fullWidthGradeMap[grade] || grade.replace('g', '');
+        const titleText = isEnglish ? `${gradeNumber}${semester === 1 ? '上' : '下'}英語` : `${gradeNumber}年級國文`;
+          
+        const pageTotal = contentList.length;
+        const pageCompleted = contentList.filter(item => completedTasks[item.id]).length;
+
+        return (
+          <div className="flex-1 bg-[#f9f9fa] pb-12">
+            <div className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between text-sm shadow-sm">
+              <div className="flex items-center text-gray-500">
+                <button onClick={() => handleNavigate('home')} className="hover:text-[#d49a9e] flex items-center cursor-pointer">
+                  <IconHome size={16} className="mr-1" /> 首頁
+                </button>
+                <IconChevronRight size={16} className="mx-2 text-gray-300" />
+                <span className="text-[#d49a9e] font-medium">{titleText}</span>
+              </div>
+              
+              {user && pageTotal > 0 && (
+                <div className="flex items-center text-gray-500 font-medium">
+                  <span className="mr-2 hidden sm:inline">本頁完成度：</span>
+                  <div className="w-24 bg-gray-200 rounded-full h-2 mr-2 hidden sm:block overflow-hidden">
+                    <div className="bg-[#d49a9e] h-full rounded-full transition-all duration-500" style={{ width: `${(pageCompleted / pageTotal) * 100}%` }}></div>
+                  </div>
+                  <span className={`${pageCompleted === pageTotal ? 'text-[#d49a9e]' : 'text-gray-600'}`}>{pageCompleted}/{pageTotal}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+              <div className="flex flex-col md:flex-row justify-between items-center mb-10 relative">
+                <div className="w-full flex justify-end md:absolute md:right-0 top-0">
+                  {isEnglish && (
+                    <button 
+                      onClick={toggleSemester}
+                      className="flex items-center px-4 py-2 border-2 border-[#d49a9e] text-[#d49a9e] rounded-full hover:bg-pink-50 transition-colors font-bold bg-white shadow-sm hover:shadow-md cursor-pointer"
+                    >
+                      切換至 {semester === 1 ? '下' : '上'}學期 <IconRefreshCw size={16} className="ml-2" />
+                    </button>
+                  )}
+                </div>
+                
+                <div className="w-full flex justify-center items-center mt-8 md:mt-0">
+                  <IconFeather className="text-[#cbd5e1] mr-4 transform -rotate-12" size={56} />
+                  <h1 className="text-4xl md:text-5xl font-bold text-[#6d6875] tracking-widest">{titleText}</h1>
+                </div>
+              </div>
+
+              {contentList.length === 0 && (
+                <div className="border border-dashed border-[#d49a9e] bg-pink-50/50 rounded-xl p-4 flex items-center justify-center text-[#d49a9e] mb-10 shadow-sm">
+                  <IconAlertCircle size={20} className="mr-2" />
+                  <span className="font-medium">
+                    公告：{isEnglish && semester === 1 ? '上學期' : ''}本科目目前尚未上傳，僅保留現有資源供參考
+                  </span>
+                </div>
+              )}
+
+              <div className="flex flex-wrap justify-center gap-6 mt-8">
+                {contentList.map((item, index) => {
+                  const isCompleted = !!completedTasks[item.id];
+                  
+                  return (
+                    <button 
+                      key={index}
+                      onClick={() => handleTaskClick(item)}
+                      className={`relative flex flex-col items-center justify-center rounded-2xl shadow-sm transition-all duration-300 border-2 overflow-hidden w-36 h-24 whitespace-pre-line text-center leading-tight px-3 font-bold text-lg cursor-pointer
+                        ${isCompleted 
+                          ? 'border-[#d49a9e] bg-[#d49a9e] text-white shadow-md' 
+                          : 'border-gray-100 bg-white text-gray-700 hover:border-[#d49a9e] hover:text-[#d49a9e] hover:-translate-y-1'}`}
+                      title="點擊前往練習並獲得積分"
+                    >
+                      {item.title}
+                      
+                      {isCompleted && (
+                        <div className="absolute top-2 right-2 text-white bg-[#c28488] rounded-full p-0.5">
+                          <IconCheckCircle size={16} />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      // --- 主渲染返回 ---
+      return (
+        <div className="min-h-screen flex flex-col font-sans selection:bg-pink-100 selection:text-pink-900">
+          <Navbar />
+          {currentPage === 'home' && <HomeView />}
+          {currentPage === 'leaderboard' && <LeaderboardView />}
+          {currentPage.includes('-') && <SubjectView />}
+          <LoginModal />
+          
+          <footer className="bg-[#f2e8e9] border-t border-[#e8d5d7] pt-8 pb-6 flex flex-col justify-between px-6 items-center mt-auto">
+            <div className="space-y-2 text-gray-500 text-center mb-6 max-w-2xl">
+              <p className="font-bold text-sm text-gray-600">PRACTICE HUB 抽背練習統整平臺</p>
+              <p className="font-medium text-xs">原版工具：米克師 ｜ 延伸開發：金魚老師</p>
+              <p className="font-medium text-xs">
+                原版網頁連結：<a href="https://spedmixteaching.pages.dev/" target="_blank" rel="noopener noreferrer" className="text-[#d49a9e] hover:text-[#c28488] font-bold transition-colors">https://reurl.cc/KO98Q9</a>
+              </p>
+              <p className="text-[10px] pt-3 text-gray-400">本作品基於原版網頁改編，採用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" rel="noopener noreferrer" className="hover:text-[#d49a9e] underline decoration-dotted transition-colors">CC BY-NC-SA 4.0</a> 授權。</p>
+            </div>
+            <p className="text-xs text-gray-400 font-medium">© 2026 PRACTICE HUB</p>
+          </footer>
+        </div>
+      );
+    }
+
+    // 渲染應用程式
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
 </body>
 </html>
