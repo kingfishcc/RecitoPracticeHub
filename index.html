@@ -139,7 +139,8 @@
         },
         g9: {
           sem1: [
-            { id: 'en-g9-1-1', title: 'Unit 1\n課本 P.18', url: 'https://share.gemini.google/vR67MybngPM1' }
+            { id: 'en-g9-1-1', title: 'Unit 1\n課本 P.12', url: 'https://share.gemini.google/FRC6zIjlaH7Z' },
+            { id: 'en-g9-1-2', title: 'Unit 1\n課本 P.18', url: 'https://share.gemini.google/vR67MybngPM1' }
           ],
           sem2: [
             { id: 'en-g9-2-1', title: 'Unit 1', url: 'https://gemini.google.com/share/059f461e1510' },
@@ -276,7 +277,7 @@
 
       const loginGoogle = async () => {
         if (!window.isFirebaseReady || !window.firebaseMethods) {
-          setAuthError("系統初始化中，請稍候...");
+          setAuthError("系統初始化中，請稍候……");
           return;
         }
 
@@ -412,7 +413,7 @@
                       </svg>
                     </div>
                     <span className="font-bold text-blue-600 text-lg">
-                      {isAuthenticating ? '連線登入中...' : '使用 Google 帳號登入'}
+                      {isAuthenticating ? '連線登入中……' : '使用 Google 帳號登入'}
                     </span>
                   </div>
                   <p className="text-xs text-gray-500 relative z-10 leading-relaxed">
@@ -487,7 +488,7 @@
                       type="text"
                       onKeyDown={handleSearch}
                       className="block w-full pl-10 pr-3 py-2 border border-transparent rounded-full leading-5 bg-white bg-opacity-70 text-gray-700 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#d49a9e] sm:text-sm transition-colors"
-                      placeholder="搜尋課文名稱..."
+                      placeholder="搜尋課文名稱……"
                     />
                   </div>
                 </div>
