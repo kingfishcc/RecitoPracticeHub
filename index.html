@@ -76,7 +76,7 @@
   <div id="root"></div>
 
   <!-- React 應用程式 -->
-  <script type="text/babel" data-type="module">
+  <script type="text/babel">
     const { useState, useEffect } = React;
 
     // --- SVG 圖示定義 ---
@@ -109,14 +109,16 @@
           { id: 'ch-g8-2', title: '風箏', url: 'https://kingfishcc.github.io/Kite-Rearrange/' },
           { id: 'ch-g8-3', title: '庭中有奇樹', url: 'https://kingfishcc.github.io/In-The-Courtyard-There-Is-A-Strange-Tree-Rearrange/' },
           { id: 'ch-g8-4', title: '慈烏夜啼', url: 'https://kingfishcc.github.io/Gentle-Crow-Nightly-Wails-Rearrange/' },
+          { id: 'ch-g8-13', title: '迢迢牽牛星', url: 'https://kingfishcc.github.io/Far-in-the-Skies-Is-the-Cowherd-Star-Rearrange/' },
+          { id: 'ch-g8-14', title: '賦得\n古原草送別', url: 'https://kingfishcc.github.io/Farewells-on-Grassland-Rearrange/' },
           { id: 'ch-g8-5', title: '愛蓮說', url: 'https://kingfishcc.github.io/On-the-Love-of-the-Lotus-Rearrange/' },
           { id: 'ch-g8-6', title: '一棵開花的樹', url: 'https://kingfishcc.github.io/A-Blooming-Tree-Rearrange/' },
           { id: 'ch-g8-7', title: '木蘭詩', url: 'https://kingfishcc.github.io/The-Ballad-of-Mulan-Rearrange/' },
           { id: 'ch-g8-8', title: '張釋之執法', url: 'https://kingfishcc.github.io/Zhang-Shizhi-Upholds-the-Law-Rearrange/' },
-          { id: 'ch-g8-9', title: '我所知道的康橋', url: 'https://kingfishcc.github.io/The-Cambridge-I-Know-Rearrange/' },
+          { id: 'ch-g8-9', title: '我所知道的\n康橋', url: 'https://kingfishcc.github.io/The-Cambridge-I-Know-Rearrange/' },
           { id: 'ch-g8-10', title: '偶然', url: 'https://kingfishcc.github.io/By-Chance-Rearrange/' },
           { id: 'ch-g8-11', title: '陋室銘', url: 'https://kingfishcc.github.io/Inscription-on-the-Humble-Home-Rearrange/' },
-          { id: 'ch-g8-12', title: '成功是失敗之母', url: 'https://gemini.google.com/share/47312c22ca61' }
+          { id: 'ch-g8-12', title: '成功是\n失敗之母', url: 'https://gemini.google.com/share/47312c22ca61' }
         ],
         g9: [
           { id: 'ch-g9-1', title: '戲李白', url: 'https://kingfishcc.github.io/Teasing-Li-Bai-Rearrange/' },
@@ -398,7 +400,6 @@
               </div>
 
               <div className="p-8 space-y-6">
-                {/* 1. Google 登入按鈕 (Firebase) */}
                 <button 
                   onClick={loginGoogle}
                   disabled={isAuthenticating}
@@ -850,7 +851,10 @@
                     <button 
                       key={index}
                       onClick={() => handleTaskClick(item)}
-                      className={`relative flex flex-col items-center justify-center rounded-2xl shadow-sm transition-all duration-300 border-2 overflow-hidden w-36 h-24 whitespace-pre-line text-center leading-tight px-3 font-bold text-lg cursor-pointer ${isCompleted ? 'border-[#d49a9e] bg-[#d49a9e] text-white shadow-md' : 'border-gray-100 bg-white text-gray-700 hover:border-[#d49a9e] hover:text-[#d49a9e] hover:-translate-y-1'}`}
+                      className={`relative flex flex-col items-center justify-center rounded-2xl shadow-sm transition-all duration-300 border-2 overflow-hidden w-36 h-24 whitespace-pre-line text-center leading-tight px-3 font-bold text-lg cursor-pointer
+                        ${isCompleted 
+                          ? 'border-[#d49a9e] bg-[#d49a9e] text-white shadow-md' 
+                          : 'border-gray-100 bg-white text-gray-700 hover:border-[#d49a9e] hover:text-[#d49a9e] hover:-translate-y-1'}`}
                       title="點擊前往練習並獲得積分"
                     >
                       {item.title}
